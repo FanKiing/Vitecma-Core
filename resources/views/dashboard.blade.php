@@ -276,8 +276,8 @@
                     <thead>
                         <tr>
                             <th class="w-[19%]">Numéro de plaque</th>
-                            <th class="w-[22%]">Propriétaire</th>
-                            <th class="w-[9%] text-center">Cat.</th>
+                            <th class="w-[22%]">Nom Complet</th>
+                            <th class="w-[9%] text-center">Catégorie</th>
                             <th class="w-[14%] text-center">Statut</th>
                             <th class="w-[12%] text-center">Temps</th>
                             @if(auth()->user()->role === 'admin')
@@ -356,8 +356,6 @@
                                             class="edit-btn icon-btn border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:border-amber-300 dark:hover:border-amber-800/70 shine-effect">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                     </button>
-
-                                    <!-- 🔵 زر Imprimer باللون الأزرق الداكن -->
                                     <button type="button"
                                             onclick="handleStatusUpdate({{ $inspection->id }}, this.dataset.status)"
                                             data-status="{{ $inspection->status }}"
