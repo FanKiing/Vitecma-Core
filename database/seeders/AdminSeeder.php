@@ -12,8 +12,8 @@ class AdminSeeder extends Seeder
     {
         User::create([
             'name'     => 'Admin Vitecma',
-            'email'    => 'admin@vitecma.ma',
-            'password' => Hash::make('admin2026'), // 💡 التشفير مهم جداً هنا
+            'username' => 'admin',  // نستخدم username كمعرف
+            'password' => Hash::make('admin2026'),
             'role'     => 'admin',
             'is_admin' => true,
         ]);

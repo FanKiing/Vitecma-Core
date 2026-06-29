@@ -34,7 +34,7 @@
         * { font-family: 'Inter', sans-serif; }
         [x-cloak] { display: none !important; }
 
-        /* ── Grille de fond (comme dashboard) ── */
+        /* ── Grille de fond ── */
         .bg-grid-light,
         .bg-grid-dark {
             position: absolute; inset: 0;
@@ -73,8 +73,8 @@
 
         /* ── Inputs ── */
         .input-group:focus-within svg { color: #16a34a; transition: color 0.25s ease; }
-        input:focus { box-shadow: 0 0 0 3px rgba(22,163,74,0.13) !important; outline: none; }
-        input { transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.4s ease; }
+        input:focus, select:focus { box-shadow: 0 0 0 3px rgba(22,163,74,0.13) !important; outline: none; }
+        input, select { transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.4s ease; }
 
         /* ── Shine ── */
         .shine-effect { position: relative; overflow: hidden; }
@@ -97,7 +97,7 @@
     <div class="bg-grid-light absolute z-0"></div>
     <div class="bg-grid-dark absolute z-0"></div>
 
-    {{-- Dark Mode Toggle (comme dashboard) --}}
+    {{-- Dark Mode Toggle --}}
     <div class="relative z-10 p-6 flex justify-end">
         <button @click="toggleDark()"
                 class="p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-700/60 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md hover:bg-white dark:hover:bg-slate-700 transition-all duration-300 shadow-sm hover:shadow-md text-slate-500 dark:text-slate-400">
@@ -112,7 +112,7 @@
 
             <div class="login-card relative rounded-2xl border border-slate-200/70 dark:border-white/[0.06] overflow-hidden bg-white dark:bg-[#111827]">
 
-                {{-- Barre verte (comme dashboard) --}}
+                {{-- Barre verte --}}
                 <div class="h-[3px] w-full" style="background: linear-gradient(90deg, #15803d 0%, #16a34a 40%, #22c55e 70%, #4ade80 100%);"></div>
 
                 {{-- Header --}}
@@ -137,19 +137,24 @@
                     <form id="loginForm" method="POST" action="{{ route('login') }}" class="space-y-5">
                         @csrf
 
-                        {{-- Email --}}
+                        {{-- Compte (select) --}}
                         <div class="space-y-1.5 input-group">
-                            <label for="email" class="flex items-center gap-1.5 text-[0.7rem] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                                Adresse Email
+                            <label for="username" class="flex items-center gap-1.5 text-[0.7rem] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                Compte
                             </label>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <svg class="w-5 h-5 text-slate-400 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                    <svg class="w-5 h-5 text-slate-400 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 </div>
-                                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-                                       class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 placeholder:text-slate-400/80 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-green-500 focus:ring-0 outline-none transition-all duration-300 text-[0.95rem] shadow-sm"
-                                       placeholder="votre@email.com">
+                                <select id="username" name="username" required
+                                        class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-green-500 focus:ring-0 outline-none transition-all duration-300 text-[0.95rem] shadow-sm appearance-none">
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->username }}" @if($loop->first) selected @endif>
+                                            {{ $user->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
 
@@ -250,7 +255,7 @@
                         errorMessage.innerText = Object.values(errors)[0][0];
                         errorContainer.style.display = 'flex';
                     } else {
-                        errorMessage.innerText = "Email ou mot de passe incorrect.";
+                        errorMessage.innerText = "Nom d'utilisateur ou mot de passe incorrect.";
                         errorContainer.style.display = 'flex';
                     }
                 } catch (error) {

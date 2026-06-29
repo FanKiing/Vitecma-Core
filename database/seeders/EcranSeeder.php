@@ -12,8 +12,8 @@ class EcranSeeder extends Seeder
     {
         User::create([
             'name'     => "Ecran Salle d'attente",
-            'email'    => 'ecran@vitecma.com',
-            'password' => Hash::make('vitecma2026'), // 💡 التشفير مهم جداً هنا
+            'username' => 'screen',  // نستخدم username كمعرف
+            'password' => Hash::make('vitecma2026'),
             'role'     => 'screen',
             'is_admin' => false,
         ]);

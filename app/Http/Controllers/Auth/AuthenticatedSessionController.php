@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -16,19 +17,36 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        // جلب المستخدمين المتاحين لتسجيل الدخول (admin و screen فقط)
+        $users = User::whereIn('username', ['admin', 'screen'])->get();
+        
+        return view('auth.login', compact('users'));
     }
 
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $request->authenticate();
+        $request->validate([
+            'username' => ['required', 'string'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt([
+            'username' => $request->username,
+            'password' => $request->password,
+        ], $request->boolean('remember'))) {
+            throw ValidationException::withMessages([
+                'username' => 'Identifiants incorrects.',
+            ]);
+        }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // ✅ استخدام route() أو المسار المباشر - كلاهما صحيح
+        return redirect()->intended(route('inspections.index'));
+        // أو return redirect()->intended('/dashboard');
     }
 
     /**
