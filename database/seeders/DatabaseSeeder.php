@@ -9,17 +9,17 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         \App\Models\User::truncate();
-        // استدعاء ملفات الـ Seeders بالترتيب الاحترافي
+        \App\Models\Technician::truncate();
+        \App\Models\Inspection::truncate();
+
         $this->call([
-            AdminSeeder::class,      // أولاً: إنشاء حساب الأدمن وتنظيف الجدول
-            EcranSeeder::class,      // ثانياً: إضافة حساب الشاشة
-            InspectionSeeder::class, // ثالثاً: حقن بيانات الفحوصات والسيارات
+            AdminSeeder::class,
+            EcranSeeder::class,
+            TechnicianSeeder::class,
+            InspectionSeeder::class,
         ]);
     }
 }

@@ -11,13 +11,16 @@ class Inspection extends Model
     use HasFactory, SoftDeletes; // 2. تفعيل الميزة داخل الموديل
 
     protected $fillable = [
-        'plate_number', 
-        'owner_name', 
-        'category', 
-        'status', 
+        'plate_number',
+        'owner_name',
+        'category',
+        'status',
         'started_at',
         'result',
-        'archived_at'
+        'archived_at',
+        'technician_id',
+        'technician_name',
+        'lane',
     ];
 
     protected $casts = [
@@ -25,9 +28,13 @@ class Inspection extends Model
         'archived_at' => 'datetime',
     ];
 
-    /**
-     * حساب الدقائق المتبقية بناءً على صنف السيارة
-     */
+
+    public function technician()
+    {
+        return $this->belongsTo(Technician::class);
+    }
+
+
     public function getRemainingMinutes()
     {
         if ($this->status !== 'en_cours' || !$this->started_at) {

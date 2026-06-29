@@ -30,7 +30,7 @@
         .font-plate { font-family: 'JetBrains Mono', monospace; }
         [x-cloak] { display: none !important; }
 
-        /* ── Navbar (même style que dashboard) ── */
+        /* ── Navbar ── */
         nav.vitecma-nav {
             background: rgba(255,255,255,0.94);
             backdrop-filter: blur(14px);
@@ -127,13 +127,22 @@
             color: #94a3b8; font-size: 0.8rem;
         }
         .select-wrapper .filter-input { padding-right: 2rem; }
+
+        /* ── Animations ── */
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 
     <script>tailwind.config = { darkMode: 'class' };</script>
 </head>
 <body class="bg-slate-50 dark:bg-[#0a0f1a] text-slate-800 dark:text-slate-200 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- ═══════════════════════ NAVBAR ═══════════════════════ -->
+    <!-- NAVBAR -->
     <nav class="vitecma-nav sticky top-0 z-40 px-6 py-3 flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-red-600/10 dark:bg-red-500/10 border border-red-600/20 dark:border-red-500/20 flex items-center justify-center">
@@ -156,7 +165,7 @@
 
             @if($inspections->count() > 0)
             <button onclick="emptyTrash('{{ route('inspections.emptyTrash') }}')"
-                    class="flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-md shadow-red-600/25 transition-all font-bold text-sm shine-effect hover:scale-[1.02] active:scale-95">
+                    class="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-lg shadow-md shadow-red-600/25 transition-all font-bold text-sm shine-effect hover:scale-[1.02] active:scale-95">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 <span>Vider la corbeille</span>
             </button>
@@ -172,26 +181,26 @@
         </div>
     </nav>
 
-    <!-- ═══════════════════════ MAIN ═══════════════════════ -->
+    <!-- MAIN -->
     <main class="w-full px-4 py-4 max-w-full mx-auto flex-grow">
         <div class="w-full max-w-full mx-auto bg-white dark:bg-[#111827] rounded-2xl shadow-lg border border-slate-200 dark:border-white/10 overflow-hidden">
 
             <!-- Card Header -->
-            <div class="px-6 py-4 border-b border-slate-100 dark:border-white/10 flex flex-wrap justify-between items-center gap-3 bg-red-50/30 dark:bg-red-950/10">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-white/10 flex flex-wrap justify-between items-center gap-3 bg-gradient-to-r from-red-50/80 to-rose-50/60 dark:from-red-950/20 dark:to-rose-950/10">
                 <div class="flex items-center gap-3">
-                    <div class="w-1 h-7 rounded-full bg-red-500"></div>
+                    <div class="w-1 h-8 rounded-full bg-gradient-to-b from-red-500 to-rose-500"></div>
                     <div>
                         <h2 class="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight">Véhicules supprimés</h2>
                         <p class="text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wider">المركبات المحذوفة (يمكن استعادتها)</p>
                     </div>
                 </div>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-sm font-bold border border-red-200/50 dark:border-red-900/50">
-                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
                     <span id="trash-count">{{ $inspections->total() }}</span> élément(s)
                 </span>
             </div>
 
-            <!-- ── Filter Bar ── -->
+            <!-- Filter Bar -->
             <div class="px-6 py-3.5 bg-slate-50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/10 flex flex-wrap items-center gap-3">
                 <div class="relative flex-grow min-w-[180px] max-w-xs">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,21 +230,21 @@
                 <span id="trash-no-result" class="hidden text-xs font-semibold text-slate-400 dark:text-slate-500 italic ml-auto">Aucun résultat</span>
             </div>
 
-            <!-- ── Table ── -->
+            <!-- Table -->
             <div class="w-full table-container">
-                <table class="w-full min-w-[960px] text-left">
+                <table class="w-full min-w-[1000px] text-left">
                     <thead>
                         <tr>
-                            <th class="w-[22%]">Plaque d'immatriculation</th>
-                            <th class="w-[24%]">Propriétaire</th>
-                            <th class="w-[12%] text-center">Catégorie</th>
+                            <th class="w-[20%]">Plaque d'immatriculation</th>
+                            <th class="w-[22%]">Propriétaire</th>
+                            <th class="w-[10%] text-center">Catégorie</th>
                             <th class="w-[16%] text-center">Supprimé le</th>
-                            <th class="w-[26%] text-center">Actions</th>
+                            <th class="w-[32%] text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="trash-table-body">
                         @forelse($inspections as $inspection)
-                        <tr class="trash-row transition-all duration-150"
+                        <tr class="trash-row transition-all duration-150 hover:shadow-sm"
                             id="row-{{ $inspection->id }}"
                             data-id="{{ $inspection->id }}"
                             data-plate="{{ strtolower($inspection->plate_number) }}"
@@ -258,11 +267,11 @@
                             <td class="text-center">
                                 <div class="flex items-center justify-center gap-2">
                                     <button onclick="handleTrashAction({{ $inspection->id }}, '{{ route('inspections.restore', $inspection->id) }}', 'POST', 'Voulez-vous restaurer ce véhicule ?', 'Restauré avec succès')"
-                                            class="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all shine-effect" title="Restaurer">
+                                            class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all shine-effect hover:scale-105 active:scale-95" title="Restaurer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                                     </button>
                                     <button onclick="handleTrashAction({{ $inspection->id }}, '{{ route('inspections.forceDestroy', $inspection->id) }}', 'DELETE', 'Ce véhicule sera supprimé définitivement.', 'Supprimé définitivement')"
-                                            class="p-2 bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/50 rounded-xl transition-all shine-effect" title="Supprimer définitivement">
+                                            class="p-2.5 bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/50 rounded-xl transition-all shine-effect hover:scale-105 active:scale-95" title="Supprimer définitivement">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </div>
@@ -291,7 +300,7 @@
         </div>
     </main>
 
-    <!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
+    <!-- JAVASCRIPT -->
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
@@ -440,7 +449,6 @@
                     const row = document.getElementById(`row-${inspection.id}`);
 
                     if (actionType === 'delete' && !row) {
-                        // Soft delete – ajouter la ligne si elle n'existe pas déjà
                         if (inspection.deleted_at) {
                             appendTrashRow(inspection);
                             updateTrashCount(1);
@@ -502,11 +510,11 @@
                 <td class="text-center">
                     <div class="flex items-center justify-center gap-2">
                         <button onclick="handleTrashAction(${inspection.id}, '/inspections/${inspection.id}/restore', 'POST', 'Voulez-vous restaurer ce véhicule ?', 'Restauré avec succès')"
-                                class="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all shine-effect" title="Restaurer">
+                                class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all shine-effect hover:scale-105 active:scale-95" title="Restaurer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                         </button>
                         <button onclick="handleTrashAction(${inspection.id}, '/inspections/${inspection.id}/force', 'DELETE', 'Ce véhicule sera supprimé définitivement.', 'Supprimé définitivement')"
-                                class="p-2 bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/50 rounded-xl transition-all shine-effect" title="Supprimer définitivement">
+                                class="p-2.5 bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/50 rounded-xl transition-all shine-effect hover:scale-105 active:scale-95" title="Supprimer définitivement">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
                     </div>

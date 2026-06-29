@@ -5,7 +5,7 @@ namespace App\Events;
 use App\Models\Inspection;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow; 
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -13,18 +13,21 @@ class InspectionStatusUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    // 💡 تصحيح الخطأ: إزالة كلمة clone الممنوعة في تعريف المتغيرات
-    public $inspection; 
-    public $actionType; 
+    public $inspection;
+    public $actionType;
+    public $totalCount; 
 
     /**
      * استقبال بيانات المركبة ونوع الحركة عند إطلاق الإشارة.
-     * أنواع الحركات الممكنة: 'create', 'update', 'delete', 'revert'
+     * أنواع الحركات الممكنة: 'create', 'update', 'delete', 'revert', 'bulk_delete'
      */
-    public function __construct(Inspection $inspection, string $actionType = 'update')
+    public function __construct(Inspection $inspection, string $actionType = 'update', ?int $totalCount = null)
     {
         $this->inspection = $inspection;
         $this->actionType = $actionType;
+        
+        // ✅ حساب العدد الإجمالي للسيارات (ما عدا المطبوعة)
+        $this->totalCount = $totalCount ?? Inspection::where('status', '!=', 'imprimer')->count();
     }
 
     /**
@@ -39,7 +42,7 @@ class InspectionStatusUpdated implements ShouldBroadcastNow
 
     /**
      * تسمية الإشارة باسم مخصص.
-     * (ملاحظة: في الجافاسكريبت يجب وضع نقطة قبل الاسم هكذا: listen('.inspection.changed'))
+     * (في الجافاسكريبت: listen('.inspection.changed'))
      */
     public function broadcastAs(): string
     {
@@ -47,13 +50,14 @@ class InspectionStatusUpdated implements ShouldBroadcastNow
     }
 
     /**
-     * 💡 تحديد هيكل البيانات المرسل صراحة لضمان عدم ضياع أي حقل في الـ JSON.
+     * تحديد هيكل البيانات المرسل صراحة.
      */
     public function broadcastWith(): array
     {
         return [
             'inspection' => $this->inspection->toArray(),
             'actionType' => $this->actionType,
+            'totalCount' => $this->totalCount, // ✅ إرسال العدد مع كل بث
         ];
     }
 }

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inspection;
+use App\Models\Technician;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use App\Events\InspectionStatusUpdated;
 
@@ -32,7 +34,8 @@ class InspectionController extends Controller
             'defavorable' => Inspection::whereDate('created_at', $today)->where('result', 'defavorable')->count(),
         ];
 
-        $inspections = Inspection::where('status', '!=', 'imprimer')
+        $inspections = Inspection::with('technician') // ✅ جلب بيانات التقني مع الفحص
+                                  ->where('status', '!=', 'imprimer')
                                   ->orderBy('created_at', 'desc')
                                   ->paginate(53);
 
@@ -54,15 +57,43 @@ class InspectionController extends Controller
         return response()->json(['success' => true, 'stats' => $stats]);
     }
 
+    /**
+     * 🔄 تحديث حالة الفحص (مع دعم التقني والممر)
+     */
     public function updateStatus(Request $request, int $id): JsonResponse
     {
         $this->checkAdmin();
+        
         $validated = $request->validate([
             'status' => 'required|in:libre,en_cours,valider,imprimer',
             'result' => 'nullable|in:favorable,defavorable',
+            'technician_identifier' => 'nullable|string|required_if:status,en_cours',
+            'technician_password' => 'nullable|string|required_if:status,en_cours',
+            'lane' => 'nullable|string|required_if:status,en_cours|in:VL2,VL4,PL1',
         ]);
 
         $inspection = Inspection::findOrFail($id);
+
+        // ✅ عند بدء الفحص (en_cours): التحقق من التقني والممر
+        if ($validated['status'] === 'en_cours') {
+            // التحقق من التقني
+            $technician = Technician::where('identifier', $validated['technician_identifier'])
+                                    ->where('is_active', true)
+                                    ->first();
+
+            if (!$technician || !Hash::check($validated['technician_password'], $technician->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'بيانات التقني غير صحيحة'
+                ], 422);
+            }
+
+            // حفظ بيانات التقني والممر في الفحص
+            $inspection->technician_id = $technician->id;
+            $inspection->technician_name = $technician->name;
+            $inspection->lane = $validated['lane'];
+        }
+
         $archivedAt = ($validated['status'] === 'imprimer') ? now() : $inspection->archived_at;
 
         $inspection->update([
@@ -73,6 +104,8 @@ class InspectionController extends Controller
         ]);
 
         $inspection->refresh();
+        $inspection->load('technician'); // ✅ جلب بيانات التقني مع الفحص
+
         broadcast(new InspectionStatusUpdated($inspection, 'update'));
 
         return response()->json([
@@ -84,7 +117,7 @@ class InspectionController extends Controller
     public function show(int $id): JsonResponse
     {
         $this->checkAdmin();
-        $inspection = Inspection::findOrFail($id);
+        $inspection = Inspection::with('technician')->findOrFail($id);
         return response()->json($inspection);
     }
 
@@ -108,6 +141,7 @@ class InspectionController extends Controller
             'category'     => $validated['category'],
         ]);
 
+        $inspection->load('technician');
         broadcast(new InspectionStatusUpdated($inspection, 'update'));
 
         return response()->json([
@@ -137,6 +171,7 @@ class InspectionController extends Controller
             'status'       => 'libre',
         ]);
 
+        $inspection->load('technician');
         broadcast(new InspectionStatusUpdated($inspection, 'create'));
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -166,6 +201,7 @@ class InspectionController extends Controller
         ]);
 
         $inspection->refresh();
+        $inspection->load('technician');
         broadcast(new InspectionStatusUpdated($inspection, 'revert'));
 
         return response()->json([
@@ -187,10 +223,54 @@ class InspectionController extends Controller
         ]);
     }
 
+    /**
+     * 🗑️ الحذف المتعدد للفحوصات (فقط Libre)
+     */
+    public function bulkDelete(Request $request): JsonResponse
+    {
+        $this->checkAdmin();
+        
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:inspections,id',
+        ]);
+
+        // ✅ التأكد من أن جميع الفحوصات المحددة بحالة Libre
+        $inspections = Inspection::whereIn('id', $validated['ids'])
+                                  ->where('status', 'libre')
+                                  ->get();
+
+        if ($inspections->count() === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لا توجد فحوصات بحالة Libre للحذف'
+            ], 422);
+        }
+
+        $deletedIds = [];
+
+        foreach ($inspections as $inspection) {
+            $deletedIds[] = $inspection->id;
+            broadcast(new InspectionStatusUpdated($inspection, 'delete'));
+            $inspection->delete();
+        }
+
+        // ✅ بث حدث للحذف المتعدد (يمكن استخدامه لتحديث العدد)
+        $firstInspection = $inspections->first();
+        broadcast(new InspectionStatusUpdated($firstInspection, 'bulk_delete'));
+
+        return response()->json([
+            'success' => true,
+            'message' => "تم حذف {$inspections->count()} فحص(ات) بنجاح",
+            'deleted_ids' => $deletedIds,
+            'count' => $inspections->count()
+        ]);
+    }
+
     public function trash(): View
     {
         $this->checkAdmin();
-        $inspections = Inspection::onlyTrashed()->paginate(10);
+        $inspections = Inspection::onlyTrashed()->with('technician')->paginate(10);
         return view('inspections.trash', compact('inspections'));
     }
 
@@ -200,6 +280,7 @@ class InspectionController extends Controller
         $inspection = Inspection::withTrashed()->findOrFail($id);
         $inspection->restore();
 
+        $inspection->load('technician');
         broadcast(new InspectionStatusUpdated($inspection, 'create'));
 
         if (request()->ajax() || request()->wantsJson()) {
@@ -235,6 +316,7 @@ class InspectionController extends Controller
     {
         $this->checkAdmin();
         $inspections = Inspection::where('status', 'imprimer')
+                                 ->with('technician')
                                  ->orderBy('archived_at', 'desc')
                                  ->paginate(10);
 

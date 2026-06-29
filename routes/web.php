@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InspectionController;
+use App\Http\Controllers\TechnicianController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckTechnicianRole;
 
@@ -39,7 +40,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/inspections/{inspection}', [InspectionController::class, 'destroy'])->name('inspections.destroy');
         Route::delete('/inspections/trash/empty', [InspectionController::class, 'emptyTrash'])->name('inspections.emptyTrash');
 
+        // ✅ الحذف المتعدد (Bulk Delete)
+        Route::delete('/inspections/bulk-delete', [InspectionController::class, 'bulkDelete'])->name('inspections.bulkDelete');
+
+        // =========================================================
+        // ✅ Routes لإدارة التقنيين (Technicians)
+        // =========================================================
+        Route::get('/technicians', [TechnicianController::class, 'index'])->name('technicians.index');
+        Route::get('/technicians/active', [TechnicianController::class, 'getActiveTechnicians'])->name('technicians.active');
+        Route::post('/technicians', [TechnicianController::class, 'store'])->name('technicians.store');
+        Route::get('/technicians/{id}', [TechnicianController::class, 'show'])->name('technicians.show');
+        Route::put('/technicians/{id}', [TechnicianController::class, 'update'])->name('technicians.update');
+        Route::delete('/technicians/{id}', [TechnicianController::class, 'destroy'])->name('technicians.destroy');
+        Route::post('/technicians/{id}/toggle', [TechnicianController::class, 'toggleActive'])->name('technicians.toggle');
     });
+
+    // ✅ Route للتحقق من التقني (يستعمل في بدء الفحص - متاح للمستخدمين العاديين)
+    Route::post('/technicians/verify', [TechnicianController::class, 'verify'])->name('technicians.verify');
 });
 
 require __DIR__.'/auth.php';

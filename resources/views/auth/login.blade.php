@@ -73,54 +73,105 @@
 
         /* ── Inputs ── */
         .input-group:focus-within svg { color: #16a34a; transition: color 0.25s ease; }
-        input:focus, select:focus { box-shadow: 0 0 0 3px rgba(22,163,74,0.13) !important; outline: none; }
-        input, select { transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.4s ease; }
+        input:focus, select:focus { 
+            box-shadow: 0 0 0 3px rgba(22,163,74,0.13) !important; 
+            outline: none; 
+        }
+        input, select { 
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.4s ease; 
+        }
 
-        /* ── ✨ Select personnalisé élégant ── */
+        /* ── Select Élégant ── */
         .select-elegant {
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2316a34a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 1.2rem center;
-            background-size: 14px;
+            background-size: 12px;
             padding-right: 3.2rem !important;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            font-weight: 600;
+            letter-spacing: 0.01em;
         }
         .select-elegant:hover {
-            border-color: #16a34a;
+            border-color: #16a34a !important;
             background-color: #f0fdf4;
+            box-shadow: 0 2px 8px rgba(22,163,74,0.10);
         }
-        .dark .select-elegant:hover {
-            border-color: #22c55e;
+        html.dark .select-elegant:hover {
+            border-color: #22c55e !important;
             background-color: rgba(34,197,94,0.06);
+            box-shadow: 0 2px 8px rgba(34,197,94,0.08);
         }
         .select-elegant:focus {
-            border-color: #16a34a;
-            box-shadow: 0 0 0 4px rgba(22,163,74,0.12), 0 1px 3px rgba(0,0,0,0.05);
+            border-color: #16a34a !important;
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(22,163,74,0.13), 0 2px 6px rgba(0,0,0,0.06) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2316a34a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
         }
-        .dark .select-elegant:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34,197,94,0.1);
+        html.dark .select-elegant:focus {
+            border-color: #22c55e !important;
+            background-color: rgba(15,23,42,0.95) !important;
+            box-shadow: 0 0 0 4px rgba(34,197,94,0.12) !important;
+        }
+        /* Wrapper glow ring */
+        .select-wrapper {
+            position: relative;
+            border-radius: 0.75rem;
+            transition: box-shadow 0.25s ease;
+        }
+        .select-wrapper:focus-within {
+            box-shadow: 0 0 0 4px rgba(22,163,74,0.10);
+            border-radius: 0.75rem;
         }
         .select-elegant option {
-            padding: 0.75rem 1rem;
+            padding: 10px 14px;
             background: white;
             color: #1e293b;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
-        .dark .select-elegant option {
+        html.dark .select-elegant option {
             background: #1e293b;
             color: #e2e8f0;
         }
-        .select-elegant option:checked {
+        .select-elegant option:checked,
+        .select-elegant option:hover {
             background: #16a34a;
             color: white;
         }
-        .dark .select-elegant option:checked {
-            background: #22c55e;
+        html.dark .select-elegant option:checked {
+            background: #15803d;
+            color: white;
+        }
+        /* ── Ambient orbs ── */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            animation: orbFloat 12s ease-in-out infinite;
+        }
+        .orb-1 {
+            width: 420px; height: 420px;
+            background: radial-gradient(circle, rgba(22,163,74,0.13) 0%, transparent 70%);
+            top: -140px; right: -100px;
+            animation-delay: 0s;
+        }
+        .orb-2 {
+            width: 320px; height: 320px;
+            background: radial-gradient(circle, rgba(5,150,105,0.09) 0%, transparent 70%);
+            bottom: -90px; left: -70px;
+            animation-delay: -6s;
+        }
+        html.dark .orb-1 { background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%); }
+        html.dark .orb-2 { background: radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%); }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-20px, 18px); }
         }
 
         /* ── Shine ── */
@@ -133,6 +184,27 @@
             transition: .5s;
         }
         .shine-effect:hover::before { left: 150%; }
+
+        /* ── Animated dots ── */
+        .animated-dots {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .animated-dots span {
+            width: 6px;
+            height: 6px;
+            background: #16a34a;
+            border-radius: 50%;
+            animation: dotBounce 1.4s ease-in-out infinite both;
+        }
+        .animated-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .animated-dots span:nth-child(2) { animation-delay: -0.16s; }
+        .animated-dots span:nth-child(3) { animation-delay: 0s; }
+        @keyframes dotBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
     </style>
 
     <script>tailwind.config = { darkMode: 'class' };</script>
@@ -143,6 +215,8 @@
     {{-- Grid de fond --}}
     <div class="bg-grid-light absolute z-0"></div>
     <div class="bg-grid-dark absolute z-0"></div>
+    <div class="orb orb-1 z-0"></div>
+    <div class="orb orb-2 z-0"></div>
 
     {{-- Dark Mode Toggle --}}
     <div class="relative z-10 p-6 flex justify-end">
@@ -190,22 +264,18 @@
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 Compte
                             </label>
-                            <div class="relative group">
+                            <div class="select-wrapper relative group">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                    <svg class="w-5 h-5 text-slate-400 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    <svg class="w-5 h-5 text-slate-400 group-hover:text-green-500 dark:text-slate-500 dark:group-hover:text-green-400 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 </div>
                                 <select id="username" name="username" required
-                                        class="select-elegant w-full pl-11 pr-12 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-green-500 focus:ring-0 outline-none transition-all duration-300 text-[0.95rem] shadow-sm">
+                                        class="select-elegant w-full pl-11 pr-12 py-[0.78rem] rounded-xl border-2 border-slate-200 dark:border-slate-700/80 bg-slate-50/60 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 focus:ring-0 outline-none text-[0.94rem] shadow-sm">
                                     @foreach($users as $user)
                                         <option value="{{ $user->username }}" @if($loop->first) selected @endif>
                                             {{ $user->name }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <!-- أيقونة السهم المخصصة (تظهر فقط في المتصفحات التي لا تدعم background-image) -->
-                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                </div>
                             </div>
                         </div>
 

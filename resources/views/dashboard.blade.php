@@ -33,7 +33,6 @@
         .status-en-cours { animation: pulse-green 2s cubic-bezier(0.4,0,0.6,1) infinite; }
         @keyframes pulse-green { 0%,100% { opacity:1; } 50% { opacity:.60; } }
 
-        /* ── Scrollable Table ── */
         .table-container {
             width: 100%;
             overflow-x: auto;
@@ -141,14 +140,33 @@
             color: #94a3b8; font-size: 0.8rem;
         }
         .select-wrapper .filter-input { padding-right: 2rem; }
+
+        /* Start Modal Styles */
+        #startInspectionModal .modal-card {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #startInspectionModal select,
+        #startInspectionModal input {
+            transition: all 0.3s ease;
+        }
+        #startInspectionModal select:focus,
+        #startInspectionModal input:focus {
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+        }
+        .dark #startInspectionModal select:focus,
+        .dark #startInspectionModal input:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.1);
+        }
     </style>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/uplogo.png') }}">
 </head>
-<body class="bg-slate-50 dark:bg-[#0a0f1a] text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen flex flex-col">
+<body @class(['bg-slate-50', 'dark:bg-[#0a0f1a]', 'text-slate-800', 'dark:text-slate-200', 'transition-colors', 'duration-300', 'min-h-screen', 'flex', 'flex-col'])>
 
     <!-- NAVBAR -->
-    <nav class="vitecma-nav sticky top-0 z-40 px-6 py-3 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+    <nav @class(['vitecma-nav', 'sticky', 'top-0', 'z-40', 'px-6', 'py-3', 'flex', 'flex-wrap', 'items-center', 'justify-between', 'gap-3', 'shadow-sm'])>
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-green-600/10 dark:bg-green-500/10 border border-green-600/20 dark:border-green-500/20 flex items-center justify-center overflow-hidden">
                 <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-8 h-8 object-contain">
@@ -267,21 +285,34 @@
                     Effacer
                 </button>
 
+<button onclick="bulkDelete()" id="bulk-delete-btn" 
+        class="hidden items-center gap-1.5 px-3 py-2 text-sm font-semibold text-red-500 hover:text-white hover:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-all border border-red-200 dark:border-red-800/50 shine-effect">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+    </svg>
+    <span id="bulk-delete-count">0</span>
+</button>
+
                 <span id="filter-no-result" class="hidden text-xs font-semibold text-slate-400 dark:text-slate-500 italic ml-auto">Aucun résultat</span>
             </div>
 
             <!-- Table -->
             <div class="w-full table-container">
-                <table class="w-full min-w-[1040px] text-left">
+                <table class="w-full min-w-[1200px] text-left">
                     <thead>
                         <tr>
-                            <th class="w-[19%]">Numéro de plaque</th>
-                            <th class="w-[22%]">Nom Complet</th>
-                            <th class="w-[9%] text-center">Catégorie</th>
-                            <th class="w-[14%] text-center">Statut</th>
-                            <th class="w-[12%] text-center">Temps</th>
+                            <th class="w-[3%] text-center">
+                                <input type="checkbox" id="select-all" onchange="toggleAllCheckboxes()" class="rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/30 cursor-pointer">
+                            </th>
+                            <th class="w-[14%]">Numéro de plaque</th>
+                            <th class="w-[14%]">Propriétaire</th>
+                            <th class="w-[7%] text-center">Cat.</th>
+                            <th class="w-[11%] text-center">Statut</th>
+                            <th class="w-[9%] text-center">Temps</th>
+                            <th class="w-[12%] text-center">Technicien</th>
+                            <th class="w-[8%] text-center">Lane</th>
                             @if(auth()->user()->role === 'admin')
-                            <th class="w-[24%] text-center">Actions</th>
+                            <th class="w-[22%] text-center">Actions</th>
                             @endif
                         </tr>
                     </thead>
@@ -299,10 +330,13 @@
                             data-category="{{ $inspection->category }}"
                             data-filter-status="{{ $filterStatus }}">
 
+                            <td class="text-center">
+                                <input type="checkbox" class="row-checkbox rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/30 cursor-pointer" data-id="{{ $inspection->id }}" data-status="{{ $inspection->status }}">
+                            </td>
                             <td class="font-plate font-bold text-green-600 dark:text-green-400 tracking-wider text-lg" dir="ltr">
                                 {{ str_replace('|', ' · ', $inspection->plate_number) }}
                             </td>
-                            <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[200px]">
+                            <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[150px]">
                                 {{ $inspection->owner_name ?? '---' }}
                             </td>
                             <td class="text-center">
@@ -335,9 +369,21 @@
                                     00:00
                                 </div>
                             </td>
+                            <td class="text-center text-sm font-medium text-slate-600 dark:text-slate-300">
+                                {{ $inspection->technician_name ?? '—' }}
+                            </td>
+                            <td class="text-center">
+                                @if($inspection->lane)
+                                    <span class="badge {{ $inspection->lane == 'VL2' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50' : ($inspection->lane == 'VL4' ? 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50' : 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50') }}">
+                                        {{ $inspection->lane }}
+                                    </span>
+                                @else
+                                    <span class="text-sm text-slate-400 dark:text-slate-500">—</span>
+                                @endif
+                            </td>
                             @if(auth()->user()->role === 'admin')
                             <td class="text-center">
-                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                                <div class="flex items-center justify-center gap-1.5 flex-wrap">
                                     <button type="button"
                                             onclick="confirmRevert({{ $inspection->id }})"
                                             id="btn-revert-{{ $inspection->id }}"
@@ -380,7 +426,7 @@
                         </tr>
                         @empty
                         <tr id="empty-state-row">
-                            <td colspan="{{ auth()->user()->role === 'admin' ? 6 : 5 }}" class="px-8 py-16 text-center">
+                            <td colspan="{{ auth()->user()->role === 'admin' ? 9 : 8 }}" class="px-8 py-16 text-center">
                                 <div class="flex flex-col items-center gap-3">
                                     <div class="p-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-slate-600">
                                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2m0 0h10m-10 0h10m1-10v4l2 2m0 0h1m-1 0v2"/></svg>
@@ -633,6 +679,82 @@
     </div>
     @endif
 
+    <!-- ═══════════════════════ START INSPECTION MODAL ═══════════════════════ -->
+    <div id="startInspectionModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="display:none;">
+        <div onclick="closeStartModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0" id="startModalOverlay"></div>
+        <div id="startModalContent" class="relative w-full max-w-md bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 overflow-hidden transform transition-all duration-300 scale-95 opacity-0">
+            <div class="h-1 w-full bg-gradient-to-r from-green-500 to-emerald-500"></div>
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl bg-green-50 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50">
+                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-gray-800 dark:text-white">Démarrer le contrôle</h3>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 font-medium">تأكيد بدء الفحص</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeStartModal()" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all active:scale-90">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="startInspectionForm" onsubmit="submitStartForm(event)" class="px-6 py-5 space-y-4">
+                <input type="hidden" id="start_inspection_id">
+                
+                <!-- اختيار التقني -->
+                <div class="space-y-1.5">
+                    <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        Technicien
+                    </label>
+                    <select id="start_technician" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-green-500 focus:ring-0 outline-none transition-all text-gray-800 dark:text-gray-100 font-medium text-sm">
+                        <option value="">Sélectionner un technicien...</option>
+                    </select>
+                </div>
+
+                <!-- كلمة مرور التقني -->
+                <div class="space-y-1.5" x-data="{ showPass: false }">
+                    <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        Mot de passe
+                    </label>
+                    <div class="relative">
+                        <input id="start_password" :type="showPass ? 'text' : 'password'" required placeholder="••••••••••••"
+                               class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-green-500 focus:ring-0 outline-none transition-all text-gray-800 dark:text-gray-100 text-sm tracking-wider">
+                        <button type="button" @click="showPass = !showPass" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                            <svg x-show="!showPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg x-show="showPass" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- اختيار الممر -->
+                <div class="space-y-1.5">
+                    <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-4-4 4-4m6 8l4-4-4-4M4 4h16"/></svg>
+                        Lane (الممر)
+                    </label>
+                    <select id="start_lane" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-green-500 focus:ring-0 outline-none transition-all text-gray-800 dark:text-gray-100 font-medium text-sm">
+                        <option value="">Sélectionner un m...</option>
+                        <option value="VL2">🚗 VL2</option>
+                        <option value="VL4">🚗 VL4</option>
+                        <option value="PL1">🚛 PL1</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-3 pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
+                    <button type="button" onclick="closeStartModal()" class="flex-1 py-3 text-sm font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-2xl transition-all active:scale-95">Annuler</button>
+                    <button type="submit" id="start-submit-btn" class="flex-1 py-3 bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-black rounded-2xl shadow-lg shadow-green-500/20 transition-all active:scale-95 hover:scale-[1.02] flex items-center justify-center gap-2 shine-effect">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        Démarrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT -->
     <script>
         const activeIntervals = {};
@@ -736,6 +858,7 @@
             Swal.fire({ icon: type, title, text, timer: type === 'success' ? 1500 : undefined, showConfirmButton: type === 'error' });
         }
 
+        // ── Edit Modal ─────────────────────────────────────────────
         function openEditModal(id) {
             const modal   = document.getElementById('editInspectionModal');
             const card    = document.getElementById('editModalContent');
@@ -816,18 +939,38 @@
             const parts = inspection.plate_number.split(sep);
             const formatted = parts.length === 3 ? `${parts[0]} · ${parts[1]} · ${parts[2]}` : inspection.plate_number;
 
-            row.cells[0].innerText = formatted;
-            row.cells[1].innerText = inspection.owner_name || '---';
+            const cells = row.getElementsByTagName('td');
+            // المؤشرات: 0=checkbox, 1=plaque, 2=propriétaire, 3=cat, 4=status, 5=temps, 6=technicien, 7=lane
+            if (cells.length >= 8) {
+                cells[1].innerText = formatted;
+                cells[2].innerText = inspection.owner_name || '---';
+                
+                // تحديث data attributes
+                row.dataset.plate    = inspection.plate_number.toLowerCase();
+                row.dataset.owner    = (inspection.owner_name || '').toLowerCase();
+                row.dataset.category = inspection.category;
 
-            row.dataset.plate    = inspection.plate_number.toLowerCase();
-            row.dataset.owner    = (inspection.owner_name || '').toLowerCase();
-            row.dataset.category = inspection.category;
-
-            const badge = row.cells[2].querySelector('span');
-            if (badge) {
-                badge.innerText   = inspection.category;
-                badge.className   = `badge ${inspection.category === 'PL' ? 'text-orange-600 bg-orange-50 border border-orange-200 dark:text-orange-400 dark:bg-orange-950/30 dark:border-orange-900/50' : 'text-green-700 bg-green-50 border border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900/50'}`;
+                // تحديث الـ badge
+                const badge = cells[3].querySelector('span');
+                if (badge) {
+                    badge.innerText   = inspection.category;
+                    badge.className   = `badge ${inspection.category === 'PL' ? 'text-orange-600 bg-orange-50 border border-orange-200 dark:text-orange-400 dark:bg-orange-950/30 dark:border-orange-900/50' : 'text-green-700 bg-green-50 border border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900/50'}`;
+                }
+                
+                // تحديث التقني والممر
+                cells[6].textContent = inspection.technician_name || '—';
+                if (inspection.lane) {
+                    const laneColors = {
+                        'VL2': 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50',
+                        'VL4': 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50',
+                        'PL1': 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50'
+                    };
+                    cells[7].innerHTML = `<span class="badge ${laneColors[inspection.lane] || ''}">${inspection.lane}</span>`;
+                } else {
+                    cells[7].innerHTML = '<span class="text-sm text-slate-400 dark:text-slate-500">—</span>';
+                }
             }
+
             const editBtn = row.querySelector('.edit-btn');
             if (editBtn) {
                 editBtn.dataset.plate    = inspection.plate_number;
@@ -841,6 +984,248 @@
             }
         }
 
+        // ── Bulk Delete ─────────────────────────────────────────────────
+        function toggleAllCheckboxes() {
+            const checked = document.getElementById('select-all').checked;
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checked);
+            updateBulkDeleteBtn();
+        }
+
+        function updateBulkDeleteBtn() {
+    const checked = document.querySelectorAll('.row-checkbox:checked');
+    const btn = document.getElementById('bulk-delete-btn');
+    const count = document.getElementById('bulk-delete-count');
+    
+    if (checked.length > 0) {
+        btn.classList.remove('hidden');
+        btn.classList.add('flex'); // ✅ إضافة flex عند الإظهار
+        count.textContent = checked.length;
+    } else {
+        btn.classList.add('hidden');
+        btn.classList.remove('flex'); // ✅ إزالة flex عند الإخفاء
+    }
+}
+
+        // ربط التحديث عند تغيير أي checkbox
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('row-checkbox')) {
+                updateBulkDeleteBtn();
+            }
+        });
+
+        async function bulkDelete() {
+            const checked = document.querySelectorAll('.row-checkbox:checked');
+            const ids = Array.from(checked).map(cb => parseInt(cb.dataset.id));
+            
+            // التأكد من أن جميع الفحوصات بحالة Libre
+            const libreIds = [];
+            const nonLibreIds = [];
+            
+            checked.forEach(cb => {
+                if (cb.dataset.status === 'libre') {
+                    libreIds.push(parseInt(cb.dataset.id));
+                } else {
+                    nonLibreIds.push(parseInt(cb.dataset.id));
+                }
+            });
+            
+            if (libreIds.length === 0) {
+                Swal.fire('تنبيه', 'لا توجد فحوصات بحالة Libre للحذف', 'warning');
+                return;
+            }
+            
+            if (nonLibreIds.length > 0) {
+                const confirm = await Swal.fire({
+                    title: 'تنبيه',
+                    text: `${nonLibreIds.length} فحص(ات) ليس بحالة Libre. هل تريد حذف Libre فقط؟`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'نعم، احذف Libre فقط',
+                    cancelButtonText: 'إلغاء'
+                });
+                if (!confirm.isConfirmed) return;
+            }
+            
+            const result = await Swal.fire({
+                title: `حذف ${libreIds.length} فحص(ات)؟`,
+                text: 'سيتم نقلها إلى سلة المحذوفات',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'نعم، احذف',
+                cancelButtonText: 'إلغاء'
+            });
+            
+            if (!result.isConfirmed) return;
+            
+            try {
+                const response = await fetch('/inspections/bulk-delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ ids: libreIds })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    libreIds.forEach(id => {
+                        const row = document.getElementById(`row-${id}`);
+                        if (row) {
+                            gsap.to(row, {
+                                opacity: 0, x: 40, scaleY: 0.85,
+                                duration: 0.4, ease: 'power3.in',
+                                onComplete: () => {
+                                    row.remove();
+                                    updateTotalCount();
+                                }
+                            });
+                        }
+                    });
+                    
+                    document.getElementById('select-all').checked = false;
+                    updateBulkDeleteBtn();
+                    
+                    Swal.fire('تم', data.message || `تم حذف ${libreIds.length} فحص(ات)`, 'success');
+                    setTimeout(updateTotalCount, 500);
+                }
+            } catch (error) {
+                Swal.fire('خطأ', 'حدث خطأ أثناء الحذف', 'error');
+            }
+        }
+
+        // ── Start Inspection Modal ──────────────────────────────────────
+        let startInspectionId = null;
+
+        function openStartModal(id) {
+            startInspectionId = id;
+            document.getElementById('start_inspection_id').value = id;
+            
+            const modal = document.getElementById('startInspectionModal');
+            const card = document.getElementById('startModalContent');
+            const overlay = document.getElementById('startModalOverlay');
+            
+            // جلب قائمة التقنيين
+            fetch('/technicians/active', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const select = document.getElementById('start_technician');
+                select.innerHTML = '<option value="">Sélectionner un technicien...</option>';
+                if (data.success && data.technicians) {
+                    data.technicians.forEach(tech => {
+                        const opt = document.createElement('option');
+                        opt.value = tech.identifier;
+                        opt.textContent = `${tech.name} (${tech.identifier})`;
+                        select.appendChild(opt);
+                    });
+                }
+            })
+            .catch(() => {});
+            
+            modal.style.display = 'flex';
+            void modal.offsetWidth;
+            setTimeout(() => {
+                overlay?.classList.add('opacity-100');
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeStartModal() {
+            const modal = document.getElementById('startInspectionModal');
+            const card = document.getElementById('startModalContent');
+            const overlay = document.getElementById('startModalOverlay');
+            
+            overlay?.classList.remove('opacity-100');
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.getElementById('startInspectionForm').reset();
+                startInspectionId = null;
+            }, 300);
+        }
+
+        async function submitStartForm(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('start_inspection_id').value;
+            const technicianIdentifier = document.getElementById('start_technician').value;
+            const technicianPassword = document.getElementById('start_password').value;
+            const lane = document.getElementById('start_lane').value;
+            
+            if (!technicianIdentifier || !technicianPassword || !lane) {
+                Swal.fire('تنبيه', 'يرجى ملء جميع الحقول', 'warning');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('start-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'جاري التحقق...';
+            
+            try {
+                const response = await fetch(`/inspections/${id}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: 'en_cours',
+                        technician_identifier: technicianIdentifier,
+                        technician_password: technicianPassword,
+                        lane: lane
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeStartModal();
+                    Swal.fire('✅', 'تم بدء الفحص بنجاح', 'success');
+                    
+                    const row = document.getElementById(`row-${id}`);
+                    if (row && data.inspection) {
+                        updateRowData(row, data.inspection);
+                        const btn = row.querySelector('.action-btn');
+                        if (btn) {
+                            btn.textContent = 'Valider';
+                            btn.dataset.status = 'en_cours';
+                            btn.className = 'action-btn bg-green-600 hover:bg-green-700 text-white shadow-sm shadow-green-600/30 hover:scale-105 active:scale-95 shine-effect';
+                        }
+                        row.dataset.filterStatus = 'en_cours';
+                        // تحديث حالة الفحص
+                        const statusCell = row.querySelector('.status-text');
+                        if (statusCell) {
+                            statusCell.innerHTML = '<span class="badge bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/60 status-en-cours">En cours</span>';
+                        }
+                        // إظهار زر revert
+                        const revertBtn = document.getElementById(`btn-revert-${id}`);
+                        if (revertBtn) revertBtn.style.display = 'inline-flex';
+                    }
+                    updateTotalCount();
+                } else {
+                    Swal.fire('❌', data.message || 'بيانات التقني غير صحيحة', 'error');
+                }
+            } catch (error) {
+                Swal.fire('❌', 'حدث خطأ أثناء بدء الفحص', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Démarrer';
+            }
+        }
+
+        // ── Status update ──────────────────────────────────────────
         function handleStatusUpdate(id, currentStatus) {
             if (currentStatus === 'en_cours') {
                 Swal.fire({
@@ -858,7 +1243,13 @@
                 });
                 return;
             }
-            const nextLabel = currentStatus === 'libre' ? 'Démarrer' : 'Imprimer';
+            
+            if (currentStatus === 'libre') {
+                openStartModal(id);
+                return;
+            }
+            
+            const nextLabel = currentStatus === 'valider' ? 'Imprimer' : 'Imprimer';
             Swal.fire({
                 title: 'Confirmation',
                 text: `Voulez-vous passer à l'étape : ${nextLabel} ?`,
@@ -940,6 +1331,7 @@
             .catch(err => { console.error(err); showAlert('error', 'خطأ', 'حدث خطأ في تحديث الحالة'); });
         }
 
+        // ── Trash ─────────────────────────────────────────────────
         function confirmTrash(id) {
             Swal.fire({
                 title: 'Êtes-vous sûr ?',
@@ -979,6 +1371,7 @@
             });
         }
 
+        // ── Revert ─────────────────────────────────────────────────
         function confirmRevert(id) {
             Swal.fire({
                 title: "Annuler la dernière étape ?",
@@ -1054,6 +1447,7 @@
             });
         }
 
+        // ── Add form ──────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('add-inspection-form');
             if (!form) return;
@@ -1095,6 +1489,7 @@
             });
         });
 
+        // ── Append new row ─────────────────────────────────────────
         function appendInspectionToTable(inspection) {
             const tableBody = document.getElementById('inspections-table-body');
             if (!tableBody) return;
@@ -1114,6 +1509,12 @@
                 ? 'text-orange-600 bg-orange-50 border border-orange-200 dark:text-orange-400 dark:bg-orange-950/30 dark:border-orange-900/50'
                 : 'text-green-700 bg-green-50 border border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900/50';
 
+            const laneColors = {
+                'VL2': 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50',
+                'VL4': 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50',
+                'PL1': 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50'
+            };
+
             const newRow = document.createElement('tr');
             newRow.id        = `row-${inspection.id}`;
             newRow.className = 'group transition-all duration-200';
@@ -1123,8 +1524,11 @@
             newRow.dataset.filterStatus = 'libre';
 
             newRow.innerHTML = `
+                <td class="text-center">
+                    <input type="checkbox" class="row-checkbox rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/30 cursor-pointer" data-id="${inspection.id}" data-status="libre">
+                </td>
                 <td class="font-plate font-bold text-green-600 dark:text-green-400 tracking-wider text-lg" dir="ltr">${formatted}</td>
-                <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[200px]">${inspection.owner_name || '---'}</td>
+                <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[150px]">${inspection.owner_name || '---'}</td>
                 <td class="text-center">
                     <span class="badge ${catClass}">${inspection.category === 'PL' ? '🚛' : '🚗'} ${inspection.category}</span>
                 </td>
@@ -1139,9 +1543,11 @@
                          data-duration="${inspection.category === 'VL' ? 20 : 30}"
                          data-active="false">00:00</div>
                 </td>
+                <td class="text-center text-sm font-medium text-slate-600 dark:text-slate-300">—</td>
+                <td class="text-center"><span class="text-sm text-slate-400 dark:text-slate-500">—</span></td>
                 @if(auth()->user()->role === 'admin')
                 <td class="text-center">
-                    <div class="flex items-center justify-center gap-2 flex-wrap">
+                    <div class="flex items-center justify-center gap-1.5 flex-wrap">
                         <button type="button" onclick="confirmRevert(${inspection.id})" id="btn-revert-${inspection.id}" style="display:none;"
                                 class="icon-btn border border-slate-200 dark:border-white/15 bg-white dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-200 dark:hover:border-amber-800/50 shine-effect"
                                 title="Retour à l'état précédent">
@@ -1173,6 +1579,7 @@
             initTimers();
         }
 
+        // ── Reverb real-time sync ──────────────────────────────────
         document.addEventListener('DOMContentLoaded', function () {
             initTimers();
 
@@ -1189,7 +1596,7 @@
                         return;
                     }
 
-                    if (actionType === 'update' && row) {
+                    if ((actionType === 'update' || actionType === 'revert') && row) {
                         const fs = inspection.status === 'valider' ? (inspection.result || 'valider') : inspection.status;
                         row.dataset.filterStatus = fs;
 
@@ -1231,6 +1638,22 @@
                             }
                         }
 
+                        // تحديث عمود التقني والممر
+                        const cells = row.getElementsByTagName('td');
+                        if (cells.length >= 8) {
+                            cells[6].textContent = inspection.technician_name || '—';
+                            if (inspection.lane) {
+                                const laneColors = {
+                                    'VL2': 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50',
+                                    'VL4': 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50',
+                                    'PL1': 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50'
+                                };
+                                cells[7].innerHTML = `<span class="badge ${laneColors[inspection.lane] || ''}">${inspection.lane}</span>`;
+                            } else {
+                                cells[7].innerHTML = '<span class="text-sm text-slate-400 dark:text-slate-500">—</span>';
+                            }
+                        }
+
                         if (inspection.status === 'imprimer') {
                             row.style.transition = 'all 0.5s ease';
                             row.style.opacity    = '0';
@@ -1248,6 +1671,7 @@
                 });
         });
 
+        // ── Fetch daily stats ─────────────────────────────────────────
         window.fetchDailyStats = async function () {
             const els = {
                 total:       document.getElementById('daily-total'),
