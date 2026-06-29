@@ -65,7 +65,6 @@
             color: #94a3b8;
         }
 
-        /* ── Larger cells ── */
         .table-container tbody td {
             padding: 1.1rem 1.6rem;
             font-size: 1.05rem;
@@ -81,7 +80,6 @@
         .table-container tbody tr:hover { background: rgba(22,163,74,0.04); }
         .dark .table-container tbody tr:hover { background: rgba(34,197,94,0.06); }
 
-        /* ── Badges ── */
         .badge {
             display: inline-flex; align-items: center; gap: 0.3rem;
             padding: 0.3rem 0.85rem; font-size: 0.82rem; font-weight: 700;
@@ -89,7 +87,6 @@
             border-width: 1px; white-space: nowrap;
         }
 
-        /* ── Buttons ── */
         .action-btn {
             display: inline-flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 0.88rem; padding: 0.45rem 1.3rem;
@@ -105,7 +102,6 @@
         .icon-btn:hover svg { transform: scale(1.15); }
         .icon-btn:active { transform: scale(0.92); }
 
-        /* ── Shine ── */
         .shine-effect { position: relative; overflow: hidden; }
         .shine-effect::before {
             content: ""; position: absolute; top: 0; left: -120%;
@@ -115,7 +111,6 @@
         }
         .shine-effect:hover::before { left: 150%; }
 
-        /* ── Navbar ── */
         nav.vitecma-nav {
             background: rgba(255,255,255,0.94);
             backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
@@ -126,7 +121,6 @@
             border-color: rgba(255,255,255,0.07);
         }
 
-        /* ── Filter inputs ── */
         .filter-input {
             background: #f8fafc; border: 1.5px solid #e2e8f0; color: #374151;
             border-radius: 0.6rem; padding: 0.5rem 0.9rem; font-size: 0.88rem;
@@ -153,7 +147,7 @@
 </head>
 <body class="bg-slate-50 dark:bg-[#0a0f1a] text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen flex flex-col">
 
-    <!-- ═══════════════════════ NAVBAR ═══════════════════════ -->
+    <!-- NAVBAR -->
     <nav class="vitecma-nav sticky top-0 z-40 px-6 py-3 flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-green-600/10 dark:bg-green-500/10 border border-green-600/20 dark:border-green-500/20 flex items-center justify-center overflow-hidden">
@@ -166,7 +160,6 @@
         </div>
 
         <div class="flex items-center flex-wrap gap-2">
-            <!-- Date & total -->
             <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-white/5 px-4 py-1.5 rounded-full border border-slate-200/60 dark:border-white/10">
                 <span>{{ date('Y-m-d') }}</span>
                 <span class="w-px h-4 bg-slate-300 dark:bg-white/20"></span>
@@ -223,11 +216,10 @@
         </div>
     </nav>
 
-    <!-- ═══════════════════════ MAIN ═══════════════════════ -->
+    <!-- MAIN -->
     <main class="w-full px-4 py-4 max-w-full mx-auto flex-grow">
         <div class="w-full max-w-full mx-auto bg-white dark:bg-[#111827] rounded-2xl shadow-lg border border-slate-200 dark:border-white/10 overflow-hidden">
 
-            <!-- Card Header -->
             <div class="px-6 py-4 border-b border-slate-100 dark:border-white/10 flex flex-wrap justify-between items-center gap-3 bg-white dark:bg-[#111827]">
                 <div class="flex items-center gap-3">
                     <div class="w-1 h-7 rounded-full bg-green-500"></div>
@@ -238,9 +230,8 @@
                 </div>
             </div>
 
-            <!-- ── Filter Bar ── -->
+            <!-- Filter Bar -->
             <div class="px-6 py-3.5 bg-slate-50 dark:bg-white/[0.02] border-b border-slate-100 dark:border-white/10 flex flex-wrap items-center gap-3">
-                <!-- Search -->
                 <div class="relative flex-grow min-w-[180px] max-w-xs">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
@@ -250,7 +241,6 @@
                            class="filter-input w-full pl-9 pr-3">
                 </div>
 
-                <!-- Category Select -->
                 <div class="select-wrapper">
                     <select id="filter-category" onchange="filterTable()" class="filter-input min-w-[150px]">
                         <option value="">Toutes catégories</option>
@@ -259,7 +249,6 @@
                     </select>
                 </div>
 
-                <!-- Status Select -->
                 <div class="select-wrapper">
                     <select id="filter-status" onchange="filterTable()" class="filter-input min-w-[160px]">
                         <option value="">Tous les statuts</option>
@@ -270,7 +259,6 @@
                     </select>
                 </div>
 
-                <!-- Reset -->
                 <button onclick="resetFilters()" title="Réinitialiser les filtres"
                         class="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-all border border-slate-200 dark:border-white/10">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,11 +267,10 @@
                     Effacer
                 </button>
 
-                <!-- No-result indicator -->
                 <span id="filter-no-result" class="hidden text-xs font-semibold text-slate-400 dark:text-slate-500 italic ml-auto">Aucun résultat</span>
             </div>
 
-            <!-- ── Table ── -->
+            <!-- Table -->
             <div class="w-full table-container">
                 <table class="w-full min-w-[1040px] text-left">
                     <thead>
@@ -369,12 +356,20 @@
                                             class="edit-btn icon-btn border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:border-amber-300 dark:hover:border-amber-800/70 shine-effect">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                     </button>
+
+                                    <!-- 🔵 زر Imprimer باللون الأزرق الداكن -->
                                     <button type="button"
                                             onclick="handleStatusUpdate({{ $inspection->id }}, this.dataset.status)"
                                             data-status="{{ $inspection->status }}"
-                                            class="action-btn {{ $inspection->status == 'libre' ? 'bg-slate-800 hover:bg-slate-700 dark:bg-white/15 dark:hover:bg-white/25 text-white dark:text-slate-200' : ($inspection->status == 'en_cours' ? 'bg-green-600 hover:bg-green-700 text-white shadow-sm shadow-green-600/30' : 'bg-slate-900 dark:bg-slate-800 text-green-400 border border-green-500/40 hover:border-green-400 hover:text-green-300') }} hover:scale-105 active:scale-95 shine-effect">
+                                            class="action-btn
+                                                {{ $inspection->status == 'libre' ? 'bg-slate-800 hover:bg-slate-700 dark:bg-white/15 dark:hover:bg-white/25 text-white dark:text-slate-200' : '' }}
+                                                {{ $inspection->status == 'en_cours' ? 'bg-green-600 hover:bg-green-700 text-white shadow-sm shadow-green-600/30' : '' }}
+                                                {{ $inspection->status == 'valider' ? 'bg-slate-900 dark:bg-slate-800 text-green-400 border border-green-500/40 hover:border-green-400 hover:text-green-300' : '' }}
+                                                {{ $inspection->status == 'imprimer' ? 'bg-blue-700 hover:bg-blue-800 text-white shadow-sm shadow-blue-600/30' : '' }}
+                                                hover:scale-105 active:scale-95 shine-effect">
                                         {{ $inspection->status === 'libre' ? 'Démarrer' : ($inspection->status === 'en_cours' ? 'Valider' : 'Imprimer') }}
                                     </button>
+
                                     <button type="button"
                                             onclick="confirmTrash({{ $inspection->id }})"
                                             title="Supprimer"
@@ -409,7 +404,7 @@
         </div>
     </main>
 
-    <!-- ═══════════════════════ SUMMARY MODAL ═══════════════════════ -->
+    <!-- SUMMARY MODAL -->
     <div x-show="showSummaryModal" x-cloak
          x-transition:enter="transition duration-300 ease-out"
          x-transition:enter-start="opacity-0 scale-95"
@@ -419,13 +414,8 @@
          x-transition:leave-end="opacity-0 scale-95"
          class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/65 backdrop-blur-md" @click="showSummaryModal = false"></div>
-
         <div class="relative w-full max-w-md bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 overflow-hidden">
-
-            <!-- Bande top verte Vitecma -->
             <div class="h-1.5 w-full bg-gradient-to-r from-green-500 via-emerald-400 to-green-600"></div>
-
-            <!-- En-tête -->
             <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/10 bg-slate-50/60 dark:bg-white/[0.03]">
                 <div class="flex items-center gap-3">
                     <div class="p-2.5 rounded-xl bg-green-50 dark:bg-green-950/40 border border-green-100 dark:border-green-900/40">
@@ -438,18 +428,13 @@
                         <p class="text-xs font-semibold text-slate-400 dark:text-slate-500">{{ date('l d/m/Y') }}</p>
                     </div>
                 </div>
-                <button @click="showSummaryModal = false"
-                        class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-all active:scale-90">
+                <button @click="showSummaryModal = false" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-all active:scale-90">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
-
-            <!-- Corps -->
             <div class="px-5 py-5 space-y-4">
-
-                <!-- Carte Total — pleine largeur -->
                 <div class="flex items-center gap-4 bg-gradient-to-br from-green-50 to-emerald-50/60 dark:from-green-950/30 dark:to-emerald-950/20 rounded-xl p-4 border border-green-100 dark:border-green-900/40">
                     <div class="w-12 h-12 rounded-xl bg-green-600/10 dark:bg-green-500/15 flex items-center justify-center shrink-0">
                         <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -465,9 +450,7 @@
                     </div>
                 </div>
 
-                <!-- 3 cartes secondaires -->
                 <div class="grid grid-cols-3 gap-3">
-                    <!-- En cours -->
                     <div class="bg-amber-50 dark:bg-amber-950/25 rounded-xl p-3.5 border border-amber-100 dark:border-amber-900/40 text-center space-y-2">
                         <div class="w-8 h-8 mx-auto rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
                             <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -476,13 +459,11 @@
                         </div>
                         <div class="text-2xl font-black text-amber-600 dark:text-amber-400 tabular-nums leading-none" id="daily-en-cours">0</div>
                         <div class="text-[0.65rem] font-bold text-amber-500 dark:text-amber-500/80 uppercase tracking-wider leading-tight">En cours</div>
-                        <!-- Barre -->
                         <div class="h-1 rounded-full bg-amber-100 dark:bg-amber-900/50 overflow-hidden">
                             <div id="bar-en-cours" class="h-full bg-amber-500 dark:bg-amber-400 rounded-full transition-all duration-700" style="width:0%"></div>
                         </div>
                     </div>
 
-                    <!-- Favorable -->
                     <div class="bg-emerald-50 dark:bg-emerald-950/25 rounded-xl p-3.5 border border-emerald-100 dark:border-emerald-900/40 text-center space-y-2">
                         <div class="w-8 h-8 mx-auto rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
                             <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -496,7 +477,6 @@
                         </div>
                     </div>
 
-                    <!-- Défavorable -->
                     <div class="bg-red-50 dark:bg-red-950/25 rounded-xl p-3.5 border border-red-100 dark:border-red-900/40 text-center space-y-2">
                         <div class="w-8 h-8 mx-auto rounded-lg bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
                             <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -511,17 +491,15 @@
                     </div>
                 </div>
 
-                <!-- Pied -->
                 <div class="flex items-center justify-center gap-2 pt-1">
                     <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
                     <p class="text-center text-xs text-slate-400 dark:text-slate-500 font-semibold">Statistiques en temps réel</p>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- ═══════════════════════ EDIT MODAL ═══════════════════════ -->
+    <!-- EDIT MODAL -->
     <div id="editInspectionModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="display:none;">
         <div onclick="closeEditModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0" id="editModalOverlay"></div>
         <div id="editModalContent" class="relative w-full max-w-md bg-white dark:bg-[#111827] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 overflow-hidden transform transition-all duration-300 scale-95 opacity-0">
@@ -547,17 +525,14 @@
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                         Numéro de plaque
                     </label>
-                    <input type="text" id="edit_plate_number" required placeholder="12345|A|1"
-                           oninput="this.value = this.value.toUpperCase()"
-                           class="w-full px-4 py-3 font-mono font-black text-lg rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-amber-400 dark:focus:border-amber-500 focus:ring-0 outline-none transition-all text-blue-600 dark:text-blue-400 tracking-widest placeholder:text-gray-300 dark:placeholder:text-gray-600">
+                    <input type="text" id="edit_plate_number" required placeholder="12345|A|1" oninput="this.value = this.value.toUpperCase()" class="w-full px-4 py-3 font-mono font-black text-lg rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-amber-400 dark:focus:border-amber-500 focus:ring-0 outline-none transition-all text-blue-600 dark:text-blue-400 tracking-widest placeholder:text-gray-300 dark:placeholder:text-gray-600">
                 </div>
                 <div class="space-y-1.5">
                     <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         Nom du propriétaire
                     </label>
-                    <input type="text" id="edit_owner_name" placeholder="Nom Complet"
-                           class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-amber-400 dark:focus:border-amber-500 focus:ring-0 outline-none transition-all text-gray-800 dark:text-gray-100 font-semibold placeholder:text-gray-300 dark:placeholder:text-gray-600">
+                    <input type="text" id="edit_owner_name" placeholder="Nom Complet" class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-amber-400 dark:focus:border-amber-500 focus:ring-0 outline-none transition-all text-gray-800 dark:text-gray-100 font-semibold placeholder:text-gray-300 dark:placeholder:text-gray-600">
                 </div>
                 <div class="space-y-1.5">
                     <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Catégorie</label>
@@ -588,7 +563,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════ ADD MODAL ═══════════════════════ -->
+    <!-- ADD MODAL -->
     @if(auth()->user()->role === 'admin')
     <div x-show="showModal" x-cloak
          x-transition:enter="transition duration-300 ease-out"
@@ -622,17 +597,14 @@
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                         Numéro de plaque
                     </label>
-                    <input type="text" name="plate_number" required placeholder="12345|A|1"
-                           oninput="this.value = this.value.toUpperCase()"
-                           class="w-full px-4 py-3 font-mono font-black text-lg rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-emerald-400 dark:focus:border-emerald-500 focus:ring-0 outline-none transition-all text-blue-600 dark:text-blue-400 tracking-widest placeholder:text-gray-300 dark:placeholder:text-gray-600">
+                    <input type="text" name="plate_number" required placeholder="12345|A|1" oninput="this.value = this.value.toUpperCase()" class="w-full px-4 py-3 font-mono font-black text-lg rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-emerald-400 dark:focus:border-emerald-500 focus:ring-0 outline-none transition-all text-blue-600 dark:text-blue-400 tracking-widest placeholder:text-gray-300 dark:placeholder:text-gray-600">
                 </div>
                 <div class="space-y-1.5">
                     <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         Nom du propriétaire
                     </label>
-                    <input type="text" name="owner_name" placeholder="Nom Complet"
-                           class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-emerald-400 dark:focus:border-emerald-500 focus:ring-0 outline-none transition-all text-gray-800 dark:text-gray-100 font-semibold placeholder:text-gray-300 dark:placeholder:text-gray-600">
+                    <input type="text" name="owner_name" placeholder="Nom Complet" class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-emerald-400 dark:focus:border-emerald-500 focus:ring-0 outline-none transition-all text-gray-800 dark:text-gray-100 font-semibold placeholder:text-gray-300 dark:placeholder:text-gray-600">
                 </div>
                 <div class="space-y-1.5">
                     <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Catégorie</label>
@@ -663,12 +635,11 @@
     </div>
     @endif
 
-    <!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
+    <!-- JAVASCRIPT -->
     <script>
         const activeIntervals = {};
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-        // ── Filter ─────────────────────────────────────────────────
         function filterTable() {
             const search  = document.getElementById('search-input').value.toLowerCase().trim();
             const cat     = document.getElementById('filter-category').value;
@@ -701,7 +672,6 @@
             filterTable();
         }
 
-        // ── Counters ───────────────────────────────────────────────
         function updateTotalCount() {
             fetch('/inspections/count', {
                 headers: {
@@ -720,7 +690,6 @@
             .catch(() => {});
         }
 
-        // ── Timers ─────────────────────────────────────────────────
         function startSingleTimer(timer) {
             const id = timer.dataset.id;
             if (activeIntervals[id]) clearInterval(activeIntervals[id]);
@@ -765,12 +734,10 @@
             });
         }
 
-        // ── Alerts ─────────────────────────────────────────────────
         function showAlert(type, title, text) {
             Swal.fire({ icon: type, title, text, timer: type === 'success' ? 1500 : undefined, showConfirmButton: type === 'error' });
         }
 
-        // ── Edit Modal ─────────────────────────────────────────────
         function openEditModal(id) {
             const modal   = document.getElementById('editInspectionModal');
             const card    = document.getElementById('editModalContent');
@@ -846,7 +813,6 @@
             .finally(() => { if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Enregistrer'; } });
         }
 
-        // ── Row update helper ──────────────────────────────────────
         function updateRowData(row, inspection) {
             const sep  = inspection.plate_number.includes('|') ? '|' : '-';
             const parts = inspection.plate_number.split(sep);
@@ -855,7 +821,6 @@
             row.cells[0].innerText = formatted;
             row.cells[1].innerText = inspection.owner_name || '---';
 
-            // Update data attributes for filter
             row.dataset.plate    = inspection.plate_number.toLowerCase();
             row.dataset.owner    = (inspection.owner_name || '').toLowerCase();
             row.dataset.category = inspection.category;
@@ -878,7 +843,6 @@
             }
         }
 
-        // ── Status update ──────────────────────────────────────────
         function handleStatusUpdate(id, currentStatus) {
             if (currentStatus === 'en_cours') {
                 Swal.fire({
@@ -925,7 +889,6 @@
                 const btn       = row?.querySelector('.action-btn');
                 const revertBtn = document.getElementById(`btn-revert-${id}`);
 
-                // Update filter status data attribute
                 if (row) {
                     const fs = nextStatus === 'valider' ? (result || 'valider') : nextStatus;
                     row.dataset.filterStatus = fs;
@@ -938,7 +901,8 @@
                     btn.className    = 'action-btn hover:scale-105 active:scale-95 transition-all duration-200 shine-effect ';
                     if      (nextStatus === 'libre')    btn.classList.add('bg-slate-800','hover:bg-slate-700','dark:bg-white/15','dark:hover:bg-white/25','text-white');
                     else if (nextStatus === 'en_cours') btn.classList.add('bg-green-600','hover:bg-green-700','text-white','shadow-sm','shadow-green-600/30');
-                    else                                btn.classList.add('bg-slate-900','dark:bg-slate-800','text-green-400','border','border-green-500/40','hover:border-green-400','hover:text-green-300');
+                    else if (nextStatus === 'valider')  btn.classList.add('bg-slate-900','dark:bg-slate-800','text-green-400','border','border-green-500/40','hover:border-green-400','hover:text-green-300');
+                    else if (nextStatus === 'imprimer') btn.classList.add('bg-blue-700','hover:bg-blue-800','text-white','shadow-sm','shadow-blue-600/30');
                 }
 
                 const statusCell = row?.querySelector('.status-text');
@@ -978,7 +942,6 @@
             .catch(err => { console.error(err); showAlert('error', 'خطأ', 'حدث خطأ في تحديث الحالة'); });
         }
 
-        // ── Trash (AJAX fixed: _method in body) ───────────────────
         function confirmTrash(id) {
             Swal.fire({
                 title: 'Êtes-vous sûr ?',
@@ -1018,7 +981,6 @@
             });
         }
 
-        // ── Revert ─────────────────────────────────────────────────
         function confirmRevert(id) {
             Swal.fire({
                 title: "Annuler la dernière étape ?",
@@ -1046,7 +1008,6 @@
                             const statusCell = row?.querySelector('.status-text');
                             const newStatus  = data.inspection?.status ?? 'libre';
 
-                            // Update filter attribute
                             if (row) row.dataset.filterStatus = newStatus;
 
                             if (actionBtn) {
@@ -1059,6 +1020,12 @@
                                     actionBtn.textContent = 'Valider';
                                     actionBtn.classList.add('bg-green-600','hover:bg-green-700','text-white');
                                     statusCell && (statusCell.innerHTML = '<span class="badge bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/60 status-en-cours">En cours</span>');
+                                } else if (newStatus === 'valider') {
+                                    actionBtn.textContent = 'Imprimer';
+                                    actionBtn.classList.add('bg-slate-900','dark:bg-slate-800','text-green-400','border','border-green-500/40','hover:border-green-400','hover:text-green-300');
+                                } else if (newStatus === 'imprimer') {
+                                    actionBtn.textContent = 'Imprimer';
+                                    actionBtn.classList.add('bg-blue-700','hover:bg-blue-800','text-white','shadow-sm','shadow-blue-600/30');
                                 }
                                 actionBtn.dataset.status = newStatus;
                             }
@@ -1089,7 +1056,6 @@
             });
         }
 
-        // ── Add form (AJAX) ────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('add-inspection-form');
             if (!form) return;
@@ -1131,7 +1097,6 @@
             });
         });
 
-        // ── Append new row ─────────────────────────────────────────
         function appendInspectionToTable(inspection) {
             const tableBody = document.getElementById('inspections-table-body');
             if (!tableBody) return;
@@ -1210,7 +1175,6 @@
             initTimers();
         }
 
-        // ── Reverb real-time sync ──────────────────────────────────
         document.addEventListener('DOMContentLoaded', function () {
             initTimers();
 
@@ -1228,7 +1192,6 @@
                     }
 
                     if (actionType === 'update' && row) {
-                        // Sync filter status
                         const fs = inspection.status === 'valider' ? (inspection.result || 'valider') : inspection.status;
                         row.dataset.filterStatus = fs;
 
@@ -1248,7 +1211,8 @@
                             btn.className = 'action-btn hover:scale-105 active:scale-95 transition-all duration-200 shine-effect ';
                             if      (inspection.status === 'libre')    btn.classList.add('bg-slate-800','hover:bg-slate-700','dark:bg-white/15','text-white');
                             else if (inspection.status === 'en_cours') btn.classList.add('bg-green-600','hover:bg-green-700','text-white');
-                            else                                        btn.classList.add('bg-slate-900','dark:bg-slate-800','text-green-400','border','border-green-500/40');
+                            else if (inspection.status === 'valider')  btn.classList.add('bg-slate-900','dark:bg-slate-800','text-green-400','border','border-green-500/40');
+                            else if (inspection.status === 'imprimer') btn.classList.add('bg-blue-700','hover:bg-blue-800','text-white','shadow-sm','shadow-blue-600/30');
                         }
 
                         const revertBtn = document.getElementById(`btn-revert-${inspection.id}`);
@@ -1286,8 +1250,6 @@
                 });
         });
 
-        // ── Fetch daily stats ─────────────────────────────────────────
-        // Défini sur window pour être accessible depuis les directives Alpine.js
         window.fetchDailyStats = async function () {
             const els = {
                 total:       document.getElementById('daily-total'),
@@ -1295,7 +1257,6 @@
                 favorable:   document.getElementById('daily-favorable'),
                 defavorable: document.getElementById('daily-defavorable'),
             };
-            // Afficher un indicateur de chargement
             Object.values(els).forEach(el => { if (el) { el.textContent = '…'; el.style.opacity = '0.4'; } });
 
             try {
@@ -1316,7 +1277,6 @@
                     set(els.favorable,   s.favorable);
                     set(els.defavorable, s.defavorable);
 
-                    // Barre de progression
                     if (s.total > 0) {
                         const pct = el => Math.round(((s[el] || 0) / s.total) * 100);
                         const favBar  = document.getElementById('bar-favorable');

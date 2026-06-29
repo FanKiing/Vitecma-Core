@@ -76,6 +76,53 @@
         input:focus, select:focus { box-shadow: 0 0 0 3px rgba(22,163,74,0.13) !important; outline: none; }
         input, select { transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.4s ease; }
 
+        /* ── ✨ Select personnalisé élégant ── */
+        .select-elegant {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.2rem center;
+            background-size: 14px;
+            padding-right: 3.2rem !important;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .select-elegant:hover {
+            border-color: #16a34a;
+            background-color: #f0fdf4;
+        }
+        .dark .select-elegant:hover {
+            border-color: #22c55e;
+            background-color: rgba(34,197,94,0.06);
+        }
+        .select-elegant:focus {
+            border-color: #16a34a;
+            box-shadow: 0 0 0 4px rgba(22,163,74,0.12), 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .dark .select-elegant:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34,197,94,0.1);
+        }
+        .select-elegant option {
+            padding: 0.75rem 1rem;
+            background: white;
+            color: #1e293b;
+            font-weight: 500;
+        }
+        .dark .select-elegant option {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+        .select-elegant option:checked {
+            background: #16a34a;
+            color: white;
+        }
+        .dark .select-elegant option:checked {
+            background: #22c55e;
+        }
+
         /* ── Shine ── */
         .shine-effect { position: relative; overflow: hidden; }
         .shine-effect::before {
@@ -137,24 +184,28 @@
                     <form id="loginForm" method="POST" action="{{ route('login') }}" class="space-y-5">
                         @csrf
 
-                        {{-- Compte (select) --}}
+                        {{-- Compte (select élégant) --}}
                         <div class="space-y-1.5 input-group">
                             <label for="username" class="flex items-center gap-1.5 text-[0.7rem] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 Compte
                             </label>
                             <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                                     <svg class="w-5 h-5 text-slate-400 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 </div>
                                 <select id="username" name="username" required
-                                        class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-green-500 focus:ring-0 outline-none transition-all duration-300 text-[0.95rem] shadow-sm appearance-none">
+                                        class="select-elegant w-full pl-11 pr-12 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 focus:border-green-500 focus:ring-0 outline-none transition-all duration-300 text-[0.95rem] shadow-sm">
                                     @foreach($users as $user)
                                         <option value="{{ $user->username }}" @if($loop->first) selected @endif>
                                             {{ $user->name }}
                                         </option>
                                     @endforeach
                                 </select>
+                                <!-- أيقونة السهم المخصصة (تظهر فقط في المتصفحات التي لا تدعم background-image) -->
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
                             </div>
                         </div>
 
@@ -169,7 +220,7 @@
                                     <svg class="w-5 h-5 text-slate-400 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                 </div>
                                 <input id="password" :type="show ? 'text' : 'password'" name="password" required
-                                       class="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 placeholder:text-slate-400/80 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-green-500 focus:ring-0 outline-none transition-all duration-300 text-[0.95rem] shadow-sm tracking-wide"
+                                       class="w-full pl-11 pr-12 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 placeholder:text-slate-400/80 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-green-500 focus:ring-0 outline-none transition-all duration-300 text-[0.95rem] shadow-sm tracking-wide"
                                        placeholder="••••••••••••">
                                 <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
                                     <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
