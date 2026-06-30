@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inspections', function (Blueprint $table) {
-            $table->enum('result', ['favorable', 'defavorable'])->nullable()->after('status');
+            $table->enum('result', ['favorable', 'defavorable'])->nullable();
         });
     }
 
