@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -11,10 +12,18 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        \App\Models\User::truncate();
-        \App\Models\Technician::truncate();
-        \App\Models\Inspection::truncate();
+        // ✅ تعطيل فحص المفاتيح الخارجية مؤقتاً
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
+        // مسح الجداول بالترتيب (الأبناء أولاً)
+        \App\Models\Inspection::truncate();
+        \App\Models\Technician::truncate();
+        \App\Models\User::truncate();
+
+        // ✅ إعادة تفعيل فحص المفاتيح الخارجية
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        // تشغيل الـ Seeders
         $this->call([
             AdminSeeder::class,
             EcranSeeder::class,

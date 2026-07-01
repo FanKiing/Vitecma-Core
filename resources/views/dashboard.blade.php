@@ -305,12 +305,12 @@
                                 <input type="checkbox" id="select-all" onchange="toggleAllCheckboxes()" class="rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/30 cursor-pointer">
                             </th>
                             <th class="w-[14%]">Numéro de plaque</th>
-                            <th class="w-[14%]">Propriétaire</th>
+                            <th class="w-[14%]">Nom Complet</th>
                             <th class="w-[7%] text-center">Cat.</th>
                             <th class="w-[11%] text-center">Statut</th>
                             <th class="w-[9%] text-center">Temps</th>
                             <th class="w-[12%] text-center">Technicien</th>
-                            <th class="w-[8%] text-center">Lane</th>
+                            <th class="w-[8%] text-center">Line</th>
                             @if(auth()->user()->role === 'admin')
                             <th class="w-[22%] text-center">Actions</th>
                             @endif
@@ -858,6 +858,13 @@
             Swal.fire({ icon: type, title, text, timer: type === 'success' ? 1500 : undefined, showConfirmButton: type === 'error' });
         }
 
+        // ── Escape user-supplied text before injecting into innerHTML ───
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str ?? '';
+            return div.innerHTML;
+        }
+
         // ── Edit Modal ─────────────────────────────────────────────
         function openEditModal(id) {
             const modal   = document.getElementById('editInspectionModal');
@@ -906,7 +913,7 @@
             if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'Enregistrement…'; }
 
             fetch(`/inspections/${id}`, {
-                method: 'POST',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
@@ -914,7 +921,6 @@
                     'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify({
-                    _method:      'PATCH',
                     plate_number: document.getElementById('edit_plate_number').value,
                     owner_name:   document.getElementById('edit_owner_name').value,
                     category:     document.getElementById('edit_category').value
@@ -1344,14 +1350,13 @@
             }).then(result => {
                 if (result.isConfirmed) {
                     fetch(`/inspections/${id}`, {
-                        method: 'POST',
+                        method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': csrfToken,
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({ _method: 'DELETE' })
+                        }
                     })
                     .then(r => r.json())
                     .then(data => {
@@ -1523,12 +1528,16 @@
             newRow.dataset.category     = inspection.category;
             newRow.dataset.filterStatus = 'libre';
 
+            const safeFormatted = escapeHtml(formatted);
+            const safeOwner     = escapeHtml(inspection.owner_name || '---');
+            const safePlate     = escapeHtml(inspection.plate_number);
+
             newRow.innerHTML = `
                 <td class="text-center">
                     <input type="checkbox" class="row-checkbox rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/30 cursor-pointer" data-id="${inspection.id}" data-status="libre">
                 </td>
-                <td class="font-plate font-bold text-green-600 dark:text-green-400 tracking-wider text-lg" dir="ltr">${formatted}</td>
-                <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[150px]">${inspection.owner_name || '---'}</td>
+                <td class="font-plate font-bold text-green-600 dark:text-green-400 tracking-wider text-lg" dir="ltr">${safeFormatted}</td>
+                <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[150px]">${safeOwner}</td>
                 <td class="text-center">
                     <span class="badge ${catClass}">${inspection.category === 'PL' ? '🚛' : '🚗'} ${inspection.category}</span>
                 </td>
@@ -1555,8 +1564,8 @@
                         </button>
                         <button type="button" onclick="openEditModal(${inspection.id})"
                                 data-id="${inspection.id}"
-                                data-plate="${inspection.plate_number}"
-                                data-owner="${inspection.owner_name || ''}"
+                                data-plate="${safePlate}"
+                                data-owner="${safeOwner}"
                                 data-category="${inspection.category}"
                                 class="edit-btn icon-btn border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:border-amber-300 dark:hover:border-amber-800/70 shine-effect"
                                 title="Modifier">

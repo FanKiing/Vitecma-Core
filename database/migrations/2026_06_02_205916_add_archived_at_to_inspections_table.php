@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inspections', function (Blueprint $table) {
-            // إضافة عمود لتخزين وقت الأرشفة، مع السماح بأن يكون فارغاً (nullable)
-            $table->timestamp('archived_at')->nullable()->after('updated_at');
+            $table->timestamp('archived_at')->nullable();
         });
     }
 
@@ -23,7 +22,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('inspections', function (Blueprint $table) {
-            // في حال أردنا التراجع عن الـ Migration، نحذف العمود
             $table->dropColumn('archived_at');
         });
     }
