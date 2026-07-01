@@ -19,335 +19,255 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion — Vitecma</title>
+    <title>Connection — Vitecma</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
     @vite(['resources/js/app.js'])
 
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/uplogo.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         * { font-family: 'Inter', sans-serif; }
+        .font-vt  { font-family: 'JetBrains Mono', monospace; }
         [x-cloak] { display: none !important; }
 
-        /* ── Grille de fond ── */
-        .bg-grid-light,
-        .bg-grid-dark {
-            position: absolute; inset: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
+        html, body {
+            min-height: 100vh;
+            background: #f1f5f9;
+            transition: background-color 0.4s ease;
         }
-        .bg-grid-light {
-            background-image: radial-gradient(circle, #94a3b8 1px, transparent 1px);
-            background-size: 28px 28px;
-            opacity: 0.3;
+        .dark html, .dark body {
+            background: #0a0f1a;
         }
-        .bg-grid-dark {
-            background-image: radial-gradient(circle, rgba(255,255,255,0.09) 1px, transparent 1px);
-            background-size: 28px 28px;
+
+        /* ── Card entrance animation (GSAP will also apply) ── */
+        .card-enter {
             opacity: 0;
-        }
-        html.dark .bg-grid-light { opacity: 0; }
-        html.dark .bg-grid-dark  { opacity: 1; }
-
-        /* ── Card ── */
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(22px) scale(0.985); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-card { animation: fadeSlideUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        .login-card {
-            transition: box-shadow 0.45s ease, background-color 0.45s ease, border-color 0.45s ease;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
-        }
-        .dark .login-card {
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.05),
-                        0 20px 60px rgba(0,0,0,0.5),
-                        0 0 40px rgba(22,163,74,0.05);
+            transform: translateY(20px) scale(0.97);
         }
 
-        /* ── Inputs ── */
-        .input-group:focus-within svg { color: #16a34a; transition: color 0.25s ease; }
-        input:focus, select:focus { 
-            box-shadow: 0 0 0 3px rgba(22,163,74,0.13) !important; 
-            outline: none; 
-        }
-        input, select { 
-            transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.4s ease; 
-        }
-
-        /* ── Select Élégant ── */
-        .select-elegant {
+        /* ── Custom select ── */
+        .select-custom {
             appearance: none;
             -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2316a34a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 1.2rem center;
+            background-position: right 1rem center;
             background-size: 12px;
-            padding-right: 3.2rem !important;
+            padding-right: 2.8rem;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            font-weight: 600;
-            letter-spacing: 0.01em;
+            transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
         }
-        .select-elegant:hover {
-            border-color: #16a34a !important;
-            background-color: #f0fdf4;
-            box-shadow: 0 2px 8px rgba(22,163,74,0.10);
+        .dark .select-custom {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
         }
-        html.dark .select-elegant:hover {
-            border-color: #22c55e !important;
-            background-color: rgba(34,197,94,0.06);
-            box-shadow: 0 2px 8px rgba(34,197,94,0.08);
+        .select-custom:focus {
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+            outline: none;
         }
-        .select-elegant:focus {
-            border-color: #16a34a !important;
-            background-color: #fff;
-            box-shadow: 0 0 0 4px rgba(22,163,74,0.13), 0 2px 6px rgba(0,0,0,0.06) !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2316a34a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+        .dark .select-custom:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
         }
-        html.dark .select-elegant:focus {
-            border-color: #22c55e !important;
-            background-color: rgba(15,23,42,0.95) !important;
-            box-shadow: 0 0 0 4px rgba(34,197,94,0.12) !important;
-        }
-        /* Wrapper glow ring */
-        .select-wrapper {
+
+        /* ── Submit shine ── */
+        .btn-submit {
             position: relative;
-            border-radius: 0.75rem;
-            transition: box-shadow 0.25s ease;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
-        .select-wrapper:focus-within {
-            box-shadow: 0 0 0 4px rgba(22,163,74,0.10);
-            border-radius: 0.75rem;
-        }
-        .select-elegant option {
-            padding: 10px 14px;
-            background: white;
-            color: #1e293b;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        html.dark .select-elegant option {
-            background: #1e293b;
-            color: #e2e8f0;
-        }
-        .select-elegant option:checked,
-        .select-elegant option:hover {
-            background: #16a34a;
-            color: white;
-        }
-        html.dark .select-elegant option:checked {
-            background: #15803d;
-            color: white;
-        }
-        /* ── Ambient orbs ── */
-        .orb {
+        .btn-submit::before {
+            content: '';
             position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(110deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s ease;
+        }
+        .btn-submit:hover::before {
+            left: 150%;
+        }
+
+        /* ── Background grid (subtle) ── */
+        .bg-grid {
+            background-image: radial-gradient(circle, #94a3b8 1px, transparent 1px);
+            background-size: 32px 32px;
+            opacity: 0.15;
+            position: fixed;
+            inset: 0;
             pointer-events: none;
-            animation: orbFloat 12s ease-in-out infinite;
+            z-index: 0;
         }
-        .orb-1 {
-            width: 420px; height: 420px;
-            background: radial-gradient(circle, rgba(22,163,74,0.13) 0%, transparent 70%);
-            top: -140px; right: -100px;
-            animation-delay: 0s;
-        }
-        .orb-2 {
-            width: 320px; height: 320px;
-            background: radial-gradient(circle, rgba(5,150,105,0.09) 0%, transparent 70%);
-            bottom: -90px; left: -70px;
-            animation-delay: -6s;
-        }
-        html.dark .orb-1 { background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%); }
-        html.dark .orb-2 { background: radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%); }
-        @keyframes orbFloat {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(-20px, 18px); }
-        }
-
-        /* ── Shine ── */
-        .shine-effect { position: relative; overflow: hidden; }
-        .shine-effect::before {
-            content: "";
-            position: absolute; top: 0; left: -120%;
-            width: 50%; height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,.22), transparent);
-            transition: .5s;
-        }
-        .shine-effect:hover::before { left: 150%; }
-
-        /* ── Animated dots ── */
-        .animated-dots {
-            display: inline-flex;
-            gap: 4px;
-            align-items: center;
-        }
-        .animated-dots span {
-            width: 6px;
-            height: 6px;
-            background: #16a34a;
-            border-radius: 50%;
-            animation: dotBounce 1.4s ease-in-out infinite both;
-        }
-        .animated-dots span:nth-child(1) { animation-delay: -0.32s; }
-        .animated-dots span:nth-child(2) { animation-delay: -0.16s; }
-        .animated-dots span:nth-child(3) { animation-delay: 0s; }
-        @keyframes dotBounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
+        .dark .bg-grid {
+            background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+            opacity: 1;
         }
     </style>
-
     <script>tailwind.config = { darkMode: 'class' };</script>
 </head>
 
-<body class="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0a0f1a] text-slate-800 dark:text-slate-200 relative overflow-hidden" style="transition: background-color 0.45s ease, color 0.45s ease;">
+<body class="flex items-center justify-center p-4 transition-colors duration-300 relative" style="min-height:100vh;">
 
-    {{-- Grid de fond --}}
-    <div class="bg-grid-light absolute z-0"></div>
-    <div class="bg-grid-dark absolute z-0"></div>
-    <div class="orb orb-1 z-0"></div>
-    <div class="orb orb-2 z-0"></div>
+    {{-- Background grid --}}
+    <div class="bg-grid"></div>
 
-    {{-- Dark Mode Toggle --}}
-    <div class="relative z-10 p-6 flex justify-end">
+    {{-- Dark mode toggle --}}
+    <div class="fixed top-5 right-5 z-50">
         <button @click="toggleDark()"
-                class="p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-700/60 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md hover:bg-white dark:hover:bg-slate-700 transition-all duration-300 shadow-sm hover:shadow-md text-slate-500 dark:text-slate-400">
-            <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-            <svg x-show="darkMode" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-md text-slate-500 dark:text-slate-400 transition-all duration-200 hover:scale-105 active:scale-95">
+            <svg x-show="!darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
+            <svg x-show="darkMode" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
         </button>
     </div>
 
-    {{-- ===== MAIN ===== --}}
-    <main class="relative z-10 flex-grow flex items-center justify-center px-4 pb-16">
-        <div class="animate-card w-full max-w-[420px]">
+    {{-- ══════════════════════════════════
+         CARD
+    ══════════════════════════════════ --}}
+    <div id="loginCard" class="card-enter w-full max-w-[400px] bg-white dark:bg-[#111827] rounded-2xl shadow-xl border border-slate-200/50 dark:border-white/[0.07] p-8 transition-colors duration-300 relative z-10">
 
-            <div class="login-card relative rounded-2xl border border-slate-200/70 dark:border-white/[0.06] overflow-hidden bg-white dark:bg-[#111827]">
+        {{-- Brand --}}
+        <div class="flex flex-col items-center text-center mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-green-600/10 dark:bg-green-500/10 border border-green-600/20 dark:border-green-500/20 flex items-center justify-center mb-3">
+                <img src="{{ asset('images/logo.png') }}" alt="Vitecma" class="w-9 h-9 object-contain">
+            </div>
+            <h1 class="font-vt text-2xl font-black text-slate-800 dark:text-white tracking-tight">Vitecma</h1>
+            <p class="font-vt text-[0.7rem] font-medium text-slate-400 dark:text-slate-500 tracking-[0.15em] uppercase mt-0.5">Centre de Visite Technique</p>
+        </div>
 
-                {{-- Barre verte --}}
-                <div class="h-[3px] w-full" style="background: linear-gradient(90deg, #15803d 0%, #16a34a 40%, #22c55e 70%, #4ade80 100%);"></div>
+        {{-- Error banner --}}
+        <div id="errorContainer"
+             class="mb-5 items-start gap-3 px-4 py-3 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-[0.83rem] font-semibold"
+             style="display: {{ $errors->any() ? 'flex' : 'none' }};">
+            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="errorMessage">{{ $errors->first() }}</span>
+        </div>
 
-                {{-- Header --}}
-                <div class="text-center px-8 pt-8 pb-6 border-b border-slate-100 dark:border-white/6">
-                    <div class="mx-auto flex items-center justify-center w-16 h-16 rounded-2xl mb-5 bg-gradient-to-br from-green-600/15 to-green-500/5 dark:from-green-500/15 dark:to-green-400/5 border border-green-600/20 dark:border-green-400/20 shadow-sm">
-                        <img src="{{ asset('images/logo.png') }}" alt="Vitecma Logo" class="w-10 h-10 object-contain">
+        {{-- Form --}}
+        <form id="loginForm" method="POST" action="{{ route('login') }}" class="space-y-5">
+            @csrf
+
+            {{-- Account --}}
+            <div class="space-y-1.5">
+                <label for="username" class="block font-vt text-[0.7rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em]">Compte</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
                     </div>
-                    <h1 class="text-[1.6rem] font-black tracking-tight text-slate-800 dark:text-white leading-tight">Bienvenue</h1>
-                    <p class="text-[0.8rem] mt-1.5 text-slate-400 dark:text-slate-500 font-medium tracking-wide">Connectez-vous pour gérer le centre</p>
-                </div>
-
-                {{-- Body --}}
-                <div class="p-8">
-                    {{-- Error --}}
-                    <div id="errorContainer" class="mb-6 px-4 py-3 rounded-xl border border-red-100 dark:border-red-900/30 bg-red-50/80 dark:bg-red-900/10 text-red-600 dark:text-red-400 text-sm font-medium transition-all duration-300 flex items-center gap-3 backdrop-blur-sm"
-                         style="display: {{ $errors->any() ? 'flex' : 'none' }};">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        <span id="errorMessage">{{ $errors->first() }}</span>
-                    </div>
-
-                    {{-- Form --}}
-                    <form id="loginForm" method="POST" action="{{ route('login') }}" class="space-y-5">
-                        @csrf
-
-                        {{-- Compte (select élégant) --}}
-                        <div class="space-y-1.5 input-group">
-                            <label for="username" class="flex items-center gap-1.5 text-[0.7rem] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                Compte
-                            </label>
-                            <div class="select-wrapper relative group">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                    <svg class="w-5 h-5 text-slate-400 group-hover:text-green-500 dark:text-slate-500 dark:group-hover:text-green-400 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                </div>
-                                <select id="username" name="username" required
-                                        class="select-elegant w-full pl-11 pr-12 py-[0.78rem] rounded-xl border-2 border-slate-200 dark:border-slate-700/80 bg-slate-50/60 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 focus:ring-0 outline-none text-[0.94rem] shadow-sm">
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->username }}" @if($loop->first) selected @endif>
-                                            {{ $user->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        {{-- Password --}}
-                        <div class="space-y-1.5 input-group" x-data="{ show: false }">
-                            <label for="password" class="flex items-center gap-1.5 text-[0.7rem] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                Mot de passe
-                            </label>
-                            <div class="relative group">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <svg class="w-5 h-5 text-slate-400 group-hover:text-slate-500 dark:text-slate-500 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                </div>
-                                <input id="password" :type="show ? 'text' : 'password'" name="password" required
-                                       class="w-full pl-11 pr-12 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/30 text-slate-800 dark:text-slate-100 placeholder:text-slate-400/80 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:border-green-500 focus:ring-0 outline-none transition-all duration-300 text-[0.95rem] shadow-sm tracking-wide"
-                                       placeholder="••••••••••••">
-                                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
-                                    <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                    <svg x-show="show" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        {{-- Remember Me --}}
-                        <div class="flex items-center justify-between pt-1 pb-2">
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="remember" class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/30 transition-all bg-white dark:bg-slate-800 cursor-pointer shadow-sm">
-                                <span class="text-[0.75rem] font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200 transition-colors uppercase tracking-wide">
-                                    Se souvenir de moi
-                                </span>
-                            </label>
-                        </div>
-
-                        {{-- Submit --}}
-                        <button type="submit" id="submitBtn"
-                                class="relative overflow-hidden flex items-center justify-center w-full py-3 rounded-xl font-extrabold text-white text-[0.85rem] tracking-wide bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 shadow-lg shadow-green-600/20 active:scale-[0.98] outline-none focus:ring-2 focus:ring-green-500/30 transition-all duration-300 shine-effect">
-                            <svg id="btnSpinner" class="hidden animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span id="btnText">Se connecter</span>
-                        </button>
-                    </form>
+                    <select id="username" name="username" required
+                            class="select-custom w-full pl-10 pr-10 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700/70 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 text-sm font-semibold">
+                        @foreach($users as $user)
+                            <option value="{{ $user->username }}" @if($loop->first) selected @endif>
+                                {{ $user->name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
 
-            <p class="text-center text-[0.7rem] mt-8 font-bold text-slate-400/80 dark:text-slate-500/80 tracking-wide uppercase">
-                © {{ date('Y') }} Vitecma. Tous droits réservés.
-            </p>
-        </div>
-    </main>
+            {{-- Password --}}
+            <div class="space-y-1.5" x-data="{ show: false }">
+                <label for="password" class="block font-vt text-[0.7rem] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em]">Mot de passe</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <input id="password" :type="show ? 'text' : 'password'" name="password" required
+                           class="w-full pl-10 pr-11 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700/70 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 text-sm font-medium tracking-wider placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:border-green-500 focus:ring-0 transition-colors"
+                           placeholder="••••••••••••">
+                    <button type="button" @click="show = !show"
+                            class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-150">
+                        <svg x-show="!show" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <svg x-show="show" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
 
-    {{-- Script AJAX --}}
+            {{-- Remember & submit --}}
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" name="remember" id="remember"
+                           class="w-3.5 h-3.5 rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/20 bg-white dark:bg-slate-800 cursor-pointer accent-green-600">
+                    <span class="font-vt text-[0.65rem] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">Se souvenir</span>
+                </label>
+            </div>
+
+            <button type="submit" id="submitBtn"
+                    class="btn-submit w-full py-3 rounded-xl font-extrabold text-white text-sm tracking-wide bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 transition-all duration-200 shadow-md hover:shadow-lg hover:shadow-green-600/25 active:scale-[0.98] flex items-center justify-center gap-2.5 focus:outline-none focus:ring-2 focus:ring-green-500/25 mt-1">
+                <svg id="btnSpinner" class="hidden animate-spin w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                </svg>
+                <svg id="btnIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                </svg>
+                <span id="btnText">Se connecter</span>
+            </button>
+        </form>
+
+        <p class="text-center font-vt text-[0.6rem] font-medium text-slate-400 dark:text-slate-600 mt-6 tracking-[0.1em]">
+            © {{ date('Y') }} Vitecma. Tous droits réservés.
+        </p>
+    </div>
+
+    {{-- ── GSAP Animation ── --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('loginForm');
-            const submitBtn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const btnSpinner = document.getElementById('btnSpinner');
-            const errorContainer = document.getElementById('errorContainer');
-            const errorMessage = document.getElementById('errorMessage');
+            // Animate card entrance
+            gsap.to('#loginCard', {
+                duration: 0.8,
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                ease: 'power3.out',
+                delay: 0.1,
+            });
+        });
+    </script>
+
+    {{-- ── AJAX Script ── --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form        = document.getElementById('loginForm');
+            const submitBtn   = document.getElementById('submitBtn');
+            const btnText     = document.getElementById('btnText');
+            const btnIcon     = document.getElementById('btnIcon');
+            const btnSpinner  = document.getElementById('btnSpinner');
+            const errBox      = document.getElementById('errorContainer');
+            const errMsg      = document.getElementById('errorMessage');
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-90', 'cursor-not-allowed');
-                btnText.innerText = 'Connexion...';
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                btnText.innerText = 'Vérification…';
                 btnSpinner.classList.remove('hidden');
-                errorContainer.style.display = 'none';
-
-                const formData = new FormData(form);
+                btnIcon.classList.add('hidden');
+                errBox.style.display = 'none';
 
                 try {
                     const response = await fetch(form.action, {
@@ -357,14 +277,14 @@
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
                         },
-                        body: formData
+                        body: new FormData(form)
                     });
 
                     if (response.ok || response.redirected) {
                         Swal.fire({
                             icon: 'success',
-                            title: 'Connexion réussie',
-                            text: 'Redirection vers le tableau de bord...',
+                            title: 'Accès autorisé',
+                            text: 'Chargement du tableau de bord…',
                             timer: 1200,
                             showConfirmButton: false
                         }).then(() => {
@@ -372,21 +292,21 @@
                         });
                     } else if (response.status === 422) {
                         const data = await response.json();
-                        const errors = data.errors;
-                        errorMessage.innerText = Object.values(errors)[0][0];
-                        errorContainer.style.display = 'flex';
+                        errMsg.innerText = Object.values(data.errors)[0][0];
+                        errBox.style.display = 'flex';
                     } else {
-                        errorMessage.innerText = "Nom d'utilisateur ou mot de passe incorrect.";
-                        errorContainer.style.display = 'flex';
+                        errMsg.innerText = "Identifiant ou mot de passe incorrect.";
+                        errBox.style.display = 'flex';
                     }
-                } catch (error) {
-                    errorMessage.innerText = "Erreur de connexion au serveur.";
-                    errorContainer.style.display = 'flex';
+                } catch {
+                    errMsg.innerText = "Erreur de connexion au serveur.";
+                    errBox.style.display = 'flex';
                 } finally {
                     submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-90', 'cursor-not-allowed');
+                    submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
                     btnText.innerText = 'Se connecter';
                     btnSpinner.classList.add('hidden');
+                    btnIcon.classList.remove('hidden');
                 }
             });
         });
