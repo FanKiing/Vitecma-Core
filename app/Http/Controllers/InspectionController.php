@@ -24,6 +24,11 @@ class InspectionController extends Controller
         }
     }
 
+    private function currentTotalCount(): int
+    {
+        return Inspection::where('status', '!=', 'imprimer')->count();
+    }
+
     public function index(Request $request): View
     {
         $today = Carbon::today();
@@ -34,7 +39,7 @@ class InspectionController extends Controller
             'defavorable' => Inspection::whereDate('created_at', $today)->where('result', 'defavorable')->count(),
         ];
 
-        $inspections = Inspection::with('technician') // ✅ جلب بيانات التقني مع الفحص
+        $inspections = Inspection::with('technician') // ✅ Récupérer les données du technicien avec l'inspection
                                   ->where('status', '!=', 'imprimer')
                                   ->orderBy('created_at', 'desc')
                                   ->paginate(53);
@@ -43,7 +48,7 @@ class InspectionController extends Controller
     }
 
     /**
-     * 📊 جلب إحصائيات اليوم عبر AJAX لزر Summary
+     * 📊 Récupérer les statistiques du jour via AJAX pour le bouton Résumé
      */
     public function dailyStats(): JsonResponse
     {
@@ -58,7 +63,7 @@ class InspectionController extends Controller
     }
 
     /**
-     * 🔄 تحديث حالة الفحص (مع دعم التقني والممر)
+     * 🔄 Mettre à jour le statut de l'inspection (avec support du technicien et de la voie)
      */
     public function updateStatus(Request $request, int $id): JsonResponse
     {
@@ -74,9 +79,9 @@ class InspectionController extends Controller
 
         $inspection = Inspection::findOrFail($id);
 
-        // ✅ عند بدء الفحص (en_cours): التحقق من التقني والممر
+        // ✅ Lors du démarrage de l'inspection (en_cours) : vérification du technicien et de la voie
         if ($validated['status'] === 'en_cours') {
-            // التحقق من التقني
+            // Vérification du technicien
             $technician = Technician::where('identifier', $validated['technician_identifier'])
                                     ->where('is_active', true)
                                     ->first();
@@ -84,11 +89,11 @@ class InspectionController extends Controller
             if (!$technician || !Hash::check($validated['technician_password'], $technician->password)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'بيانات التقني غير صحيحة'
+                    'message' => 'Identifiants du technicien incorrects'
                 ], 422);
             }
 
-            // حفظ بيانات التقني والممر في الفحص
+            // Enregistrer les données du technicien et de la voie dans l'inspection
             $inspection->technician_id = $technician->id;
             $inspection->technician_name = $technician->name;
             $inspection->lane = $validated['lane'];
@@ -104,13 +109,14 @@ class InspectionController extends Controller
         ]);
 
         $inspection->refresh();
-        $inspection->load('technician'); // ✅ جلب بيانات التقني مع الفحص
+        $inspection->load('technician'); // ✅ Récupérer les données du technicien avec l'inspection
 
         broadcast(new InspectionStatusUpdated($inspection, 'update'))->toOthers();
 
         return response()->json([
             'success'    => true,
-            'inspection' => $inspection
+            'inspection' => $inspection,
+            'totalCount' => $this->currentTotalCount(),
         ]);
     }
 
@@ -177,12 +183,13 @@ class InspectionController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success'    => true,
-                'message'    => 'تمت إضافة السيارة بنجاح',
-                'inspection' => $inspection
+                'message'    => 'Le véhicule a été ajouté avec succès',
+                'inspection' => $inspection,
+                'totalCount' => $this->currentTotalCount(),
             ]);
         }
 
-        return back()->with('success', 'تمت إضافة السيارة بنجاح');
+        return back()->with('success', 'Le véhicule a été ajouté avec succès');
     }
 
     public function revertStatus(int $id): JsonResponse
@@ -209,7 +216,8 @@ class InspectionController extends Controller
 
         return response()->json([
             'success'    => true,
-            'inspection' => $inspection
+            'inspection' => $inspection,
+            'totalCount' => $this->currentTotalCount(),
         ]);
     }
 
@@ -222,12 +230,13 @@ class InspectionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'تم نقل الفحص إلى السلة بنجاح'
+            'message' => 'Le véhicule a été déplacé vers la corbeille avec succès',
+            'totalCount' => $this->currentTotalCount(),
         ]);
     }
 
     /**
-     * 🗑️ الحذف المتعدد للفحوصات (فقط Libre)
+     * 🗑️ Suppression multiple des inspections (uniquement Libre)
      */
     public function bulkDelete(Request $request): JsonResponse
     {
@@ -238,7 +247,7 @@ class InspectionController extends Controller
             'ids.*' => 'integer|exists:inspections,id',
         ]);
 
-        // ✅ التأكد من أن جميع الفحوصات المحددة بحالة Libre
+        // ✅ S'assurer que toutes les inspections sélectionnées sont à l'état Libre
         $inspections = Inspection::whereIn('id', $validated['ids'])
                                   ->where('status', 'libre')
                                   ->get();
@@ -246,7 +255,7 @@ class InspectionController extends Controller
         if ($inspections->count() === 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'لا توجد فحوصات بحالة Libre للحذف'
+                'message' => "Aucune inspection à l'état Libre à supprimer"
             ], 422);
         }
 
@@ -258,15 +267,16 @@ class InspectionController extends Controller
             $inspection->delete();
         }
 
-        // ✅ بث حدث للحذف المتعدد (يمكن استخدامه لتحديث العدد)
+        // ✅ Diffuser un événement de suppression multiple (utilisable pour mettre à jour le compteur)
         $firstInspection = $inspections->first();
         broadcast(new InspectionStatusUpdated($firstInspection, 'bulk_delete'))->toOthers();
 
         return response()->json([
             'success' => true,
-            'message' => "تم حذف {$inspections->count()} فحص(ات) بنجاح",
+            'message' => "{$inspections->count()} inspection(s) supprimée(s) avec succès",
             'deleted_ids' => $deletedIds,
-            'count' => $inspections->count()
+            'count' => $inspections->count(),
+            'totalCount' => $this->currentTotalCount(),
         ]);
     }
 

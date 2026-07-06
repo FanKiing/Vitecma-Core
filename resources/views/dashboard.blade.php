@@ -880,15 +880,37 @@
             filterTable();
         }
 
-        function updateTotalCount() {
-            apiFetch('/inspections/count')
-                .then(data => {
-                    if (data.success) {
-                        const el = document.getElementById('total-inspections-count');
-                        if (el) el.textContent = data.count;
-                    }
-                })
-                .catch(() => {});
+        // Sets the navbar total count directly (value comes from the server:
+        // either the AJAX response's `totalCount` field, or the Reverb
+        // broadcast's `totalCount` field — there is no separate endpoint).
+        function setTotalCount(n) {
+            if (n === undefined || n === null) return;
+            const el = document.getElementById('total-inspections-count');
+            if (el) el.textContent = n;
+        }
+
+        // Re-inserts the "Aucun véhicule trouvé" placeholder row whenever the
+        // table body no longer has any real data rows (e.g. after deleting
+        // the last visible vehicle).
+        function checkEmptyTable() {
+            const tableBody = document.getElementById('inspections-table-body');
+            if (!tableBody) return;
+            const hasRows = tableBody.querySelector('tr[id^="row-"]');
+            if (!hasRows && !document.getElementById('empty-state-row')) {
+                const colspan = document.querySelectorAll('thead th').length || 7;
+                const tr = document.createElement('tr');
+                tr.id = 'empty-state-row';
+                tr.innerHTML = `
+                    <td colspan="${colspan}" class="px-8 py-16 text-center">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-slate-600">
+                                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2m0 0h10m-10 0h10m1-10v4l2 2m0 0h1m-1 0v2"/></svg>
+                            </div>
+                            <p class="text-sm font-medium text-slate-400 dark:text-slate-600">Aucun véhicule trouvé</p>
+                        </div>
+                    </td>`;
+                tableBody.appendChild(tr);
+            }
         }
 
         function startSingleTimer(timer) {
@@ -1007,7 +1029,6 @@
                     closeEditModal();
                     const row = document.getElementById(`row-${id}`);
                     if (row && data.inspection) updateRowData(row, data.inspection);
-                    updateTotalCount();
                 }
             })
             .catch(err => showAlert('error', 'Erreur', err.message))
@@ -1091,6 +1112,7 @@
     const checked = document.querySelectorAll('.row-checkbox:checked');
     const btn = document.getElementById('bulk-delete-btn');
     const count = document.getElementById('bulk-delete-count');
+    if (!btn || !count) return; // absent for non-admin users
 
     if (checked.length > 0) {
         btn.classList.remove('hidden');
@@ -1126,7 +1148,7 @@
                                 duration: 0.4, ease: 'power3.in',
                                 onComplete: () => {
                                     row.remove();
-                                    updateTotalCount();
+                                    checkEmptyTable();
                                 }
                             });
                         }
@@ -1135,9 +1157,10 @@
                     const selectAll = document.getElementById('select-all');
                     if (selectAll) selectAll.checked = false;
                     updateBulkDeleteBtn();
+                    syncSelectAllState();
+                    setTotalCount(data.totalCount);
 
                     Swal.fire('Terminé', data.message || `${libreIds.length} véhicule(s) supprimé(s)`, 'success');
-                    setTimeout(updateTotalCount, 500);
                 }
             } catch (error) {
                 Swal.fire('Erreur', error.message || "Une erreur est survenue lors de la suppression.", 'error');
@@ -1322,7 +1345,6 @@
                         const revertBtn = document.getElementById(`btn-revert-${id}`);
                         if (revertBtn) revertBtn.style.display = 'inline-flex';
                     }
-                    updateTotalCount();
                 }
             } catch (error) {
                 Swal.fire('Erreur', error.message || 'Identifiants du technicien incorrects.', 'error');
@@ -1424,10 +1446,10 @@
                     row.style.transition = 'all 0.5s ease';
                     row.style.opacity    = '0';
                     row.style.transform  = 'translateX(30px)';
-                    setTimeout(() => { row.remove(); updateTotalCount(); }, 500);
+                    setTimeout(() => { row.remove(); checkEmptyTable(); }, 500);
                 }
 
-                updateTotalCount();
+                setTotalCount(data.totalCount);
                 showAlert('success', 'Mis à jour', "Le statut de l'inspection a été mis à jour avec succès.");
             })
             .catch(err => { console.error(err); showAlert('error', 'Erreur', 'Une erreur est survenue lors de la mise à jour du statut.'); });
@@ -1452,9 +1474,10 @@
                             if (row) {
                                 gsap.to(row, {
                                     opacity: 0, x: 40, scaleY: 0.85, duration: 0.4, ease: 'power3.in',
-                                    onComplete: () => { row.remove(); updateTotalCount(); }
+                                    onComplete: () => { row.remove(); checkEmptyTable(); }
                                 });
                             }
+                            setTotalCount(data.totalCount);
                             showAlert('success', 'Succès', data.message);
                         }
                     })
@@ -1521,7 +1544,7 @@
                                 }
                             }
 
-                            updateTotalCount();
+                            setTotalCount(data.totalCount);
                             Swal.fire({ icon: 'success', title: 'Succès', timer: 1000, showConfirmButton: false });
                         }
                     })
@@ -1549,7 +1572,7 @@
                         form.reset();
                         window.dispatchEvent(new CustomEvent('close-inspection-modal'));
                         appendInspectionToTable(data.inspection);
-                        updateTotalCount();
+                        setTotalCount(data.totalCount);
                         Swal.fire({ icon: 'success', title: 'Succès', text: data.message || 'Le véhicule a été ajouté avec succès.', timer: 1500, showConfirmButton: false });
                     }
                 })
@@ -1669,7 +1692,8 @@
                             opacity: 0, x: 30, duration: 0.35, ease: 'power2.in',
                             onComplete: () => {
                                 row.remove();
-                                updateTotalCount();
+                                checkEmptyTable();
+                                setTotalCount(data.totalCount);
                                 updateBulkDeleteBtn();
                                 syncSelectAllState();
                             }
@@ -1741,22 +1765,23 @@
                             row.style.transform  = 'translateX(30px)';
                             setTimeout(() => {
                                 row.remove();
-                                updateTotalCount();
+                                checkEmptyTable();
                                 updateBulkDeleteBtn();
                                 syncSelectAllState();
                             }, 500);
                         }
 
-                        updateTotalCount();
+                        setTotalCount(data.totalCount);
                     } else if (actionType === 'create') {
                         if (typeof appendInspectionToTable === 'function') {
                             appendInspectionToTable(inspection);
-                            updateTotalCount();
+                            setTotalCount(data.totalCount);
                         }
                     } else if (actionType === 'bulk_delete') {
                         // Chaque véhicule est déjà retiré via son propre événement 'delete';
                         // on force une resynchronisation finale du compteur et des cases à cocher.
-                        updateTotalCount();
+                        setTotalCount(data.totalCount);
+                        checkEmptyTable();
                         updateBulkDeleteBtn();
                         syncSelectAllState();
                     }

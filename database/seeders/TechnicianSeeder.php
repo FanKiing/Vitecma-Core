@@ -29,10 +29,20 @@ class TechnicianSeeder extends Seeder
                 'password' => Hash::make('/10'),
                 'is_active' => true,
             ],
+            [
+                'name' => 'AYOUB JADDI',
+                'identifier' => '1550/17',
+                'password' => Hash::make('123'),
+                'is_active' => true,
+            ],
+
         ];
 
         foreach ($technicians as $tech) {
-            Technician::create($tech);
+            Technician::updateOrCreate(
+                ['identifier' => $tech['identifier']],
+                $tech
+            );
         }
     }
 }
