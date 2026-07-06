@@ -106,7 +106,7 @@ class InspectionController extends Controller
         $inspection->refresh();
         $inspection->load('technician'); // ✅ جلب بيانات التقني مع الفحص
 
-        broadcast(new InspectionStatusUpdated($inspection, 'update'));
+        broadcast(new InspectionStatusUpdated($inspection, 'update'))->toOthers();
 
         return response()->json([
             'success'    => true,
@@ -142,7 +142,7 @@ class InspectionController extends Controller
         ]);
 
         $inspection->load('technician');
-        broadcast(new InspectionStatusUpdated($inspection, 'update'));
+        broadcast(new InspectionStatusUpdated($inspection, 'update'))->toOthers();
 
         return response()->json([
             'success'    => true,
@@ -172,7 +172,7 @@ class InspectionController extends Controller
         ]);
 
         $inspection->load('technician');
-        broadcast(new InspectionStatusUpdated($inspection, 'create'));
+        broadcast(new InspectionStatusUpdated($inspection, 'create'))->toOthers();
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -195,14 +195,17 @@ class InspectionController extends Controller
         elseif ($inspection->status === 'valider') { $newStatus = 'en_cours'; }
 
         $inspection->update([
-            'status'     => $newStatus,
-            'started_at' => ($newStatus === 'en_cours') ? $inspection->started_at : null,
-            'result'     => ($newStatus === 'valider') ? $inspection->result : null
+            'status'          => $newStatus,
+            'started_at'      => ($newStatus === 'en_cours') ? $inspection->started_at : null,
+            'result'          => ($newStatus === 'valider') ? $inspection->result : null,
+            'technician_id'   => ($newStatus === 'libre') ? null : $inspection->technician_id,
+            'technician_name' => ($newStatus === 'libre') ? null : $inspection->technician_name,
+            'lane'            => ($newStatus === 'libre') ? null : $inspection->lane,
         ]);
 
         $inspection->refresh();
         $inspection->load('technician');
-        broadcast(new InspectionStatusUpdated($inspection, 'revert'));
+        broadcast(new InspectionStatusUpdated($inspection, 'revert'))->toOthers();
 
         return response()->json([
             'success'    => true,
@@ -214,7 +217,7 @@ class InspectionController extends Controller
     {
         $this->checkAdmin();
         $inspection = Inspection::findOrFail($id);
-        broadcast(new InspectionStatusUpdated($inspection, 'delete'));
+        broadcast(new InspectionStatusUpdated($inspection, 'delete'))->toOthers();
         $inspection->delete();
 
         return response()->json([
@@ -251,13 +254,13 @@ class InspectionController extends Controller
 
         foreach ($inspections as $inspection) {
             $deletedIds[] = $inspection->id;
-            broadcast(new InspectionStatusUpdated($inspection, 'delete'));
+            broadcast(new InspectionStatusUpdated($inspection, 'delete'))->toOthers();
             $inspection->delete();
         }
 
         // ✅ بث حدث للحذف المتعدد (يمكن استخدامه لتحديث العدد)
         $firstInspection = $inspections->first();
-        broadcast(new InspectionStatusUpdated($firstInspection, 'bulk_delete'));
+        broadcast(new InspectionStatusUpdated($firstInspection, 'bulk_delete'))->toOthers();
 
         return response()->json([
             'success' => true,
@@ -281,7 +284,7 @@ class InspectionController extends Controller
         $inspection->restore();
 
         $inspection->load('technician');
-        broadcast(new InspectionStatusUpdated($inspection, 'create'));
+        broadcast(new InspectionStatusUpdated($inspection, 'create'))->toOthers();
 
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json(['success' => true, 'message' => 'Restauré avec succès']);

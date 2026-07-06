@@ -14,7 +14,8 @@ class TechnicianController extends Controller
      */
     private function checkAdmin(): void
     {
-        if (auth()->user()->role !== 'admin') {
+        $user = auth()->user();
+        if (!$user || $user->role !== 'admin') {
             abort(403, 'Unauthorized');
         }
     }

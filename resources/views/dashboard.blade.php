@@ -24,9 +24,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap');
         * { font-family: 'Inter', sans-serif; }
         .font-plate { font-family: 'JetBrains Mono', monospace; }
+        .font-vt { font-family: 'JetBrains Mono', monospace; }
+
+        nav.vitecma-nav { position: relative; }
+        nav.vitecma-nav::after {
+            content: '';
+            position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, #15803d 0%, #16a34a 40%, #22c55e 70%, #4ade80 100%);
+        }
 
         [x-cloak] { display: none !important; }
 
@@ -51,10 +59,11 @@
             background: #f1f5f9;
             border-bottom: 2px solid #e2e8f0;
             padding: 1.1rem 1.6rem;
-            font-size: 0.78rem;
-            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
             white-space: nowrap;
             color: #64748b;
         }
@@ -81,8 +90,8 @@
 
         .badge {
             display: inline-flex; align-items: center; gap: 0.3rem;
-            padding: 0.3rem 0.85rem; font-size: 0.82rem; font-weight: 700;
-            border-radius: 0.375rem; text-transform: uppercase;
+            padding: 0.28rem 0.75rem; font-size: 0.72rem; font-weight: 700;
+            border-radius: 0.4rem; text-transform: uppercase; letter-spacing: 0.03em;
             border-width: 1px; white-space: nowrap;
         }
 
@@ -122,16 +131,16 @@
 
         .filter-input {
             background: #f8fafc; border: 1.5px solid #e2e8f0; color: #374151;
-            border-radius: 0.6rem; padding: 0.5rem 0.9rem; font-size: 0.88rem;
+            border-radius: 0.65rem; padding: 0.55rem 0.9rem; font-size: 0.85rem;
             font-weight: 600; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
             appearance: none; -webkit-appearance: none;
         }
-        .filter-input:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
+        .filter-input:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.13); background: #fff; }
         .dark .filter-input {
-            background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1);
             color: #e2e8f0;
         }
-        .dark .filter-input:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+        .dark .filter-input:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); background: rgba(15,23,42,0.7); }
         .dark .filter-input option { background: #1e293b; }
 
         .select-wrapper { position: relative; display: inline-flex; align-items: center; }
@@ -140,6 +149,31 @@
             color: #94a3b8; font-size: 0.8rem;
         }
         .select-wrapper .filter-input { padding-right: 2rem; }
+
+        /* Custom checkbox styling */
+        .vt-checkbox {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            width: 1.15rem; height: 1.15rem; flex-shrink: 0;
+            border: 1.5px solid #cbd5e1; border-radius: 0.35rem;
+            background: #fff; cursor: pointer; position: relative;
+            transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .dark .vt-checkbox { background: #0d1424; border-color: #475569; }
+        .vt-checkbox:hover { border-color: #16a34a; }
+        .dark .vt-checkbox:hover { border-color: #22c55e; }
+        .vt-checkbox:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(22,163,74,0.25); }
+        .vt-checkbox:checked {
+            background: #16a34a; border-color: #16a34a;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='3.5 8.5 6.5 11.5 12.5 4.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: center; background-size: 0.8rem;
+        }
+        .dark .vt-checkbox:checked { background-color: #22c55e; border-color: #22c55e; }
+        .vt-checkbox:indeterminate {
+            background: #16a34a; border-color: #16a34a;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'%3E%3Cline x1='3.5' y1='8' x2='12.5' y2='8'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: center; background-size: 0.8rem;
+        }
+        .dark .vt-checkbox:indeterminate { background-color: #22c55e; border-color: #22c55e; }
 
         /* Start Modal Styles */
         #startInspectionModal .modal-card {
@@ -172,8 +206,8 @@
                 <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-8 h-8 object-contain">
             </div>
             <div class="flex flex-col leading-tight">
-                <span class="text-lg font-extrabold tracking-tight text-slate-800 dark:text-white">VITECMA</span>
-                <span class="text-[0.6rem] font-medium text-slate-400 dark:text-slate-500 tracking-widest uppercase">Centre de Visite Technique</span>
+                <span class="font-vt text-lg font-bold tracking-[0.04em] text-slate-800 dark:text-white">VITECMA</span>
+                <span class="font-vt text-[0.58rem] font-semibold text-green-600/70 dark:text-green-400/60 tracking-[0.2em] uppercase">Centre de Visite Technique</span>
             </div>
         </div>
 
@@ -219,8 +253,12 @@
 
             <button @click="darkMode = !darkMode; localStorage.setItem('dark', darkMode)"
                     class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-all active:scale-90 text-slate-500 dark:text-slate-400">
-                <span x-show="!darkMode" class="text-xl">🌙</span>
-                <span x-show="darkMode" x-cloak class="text-xl">☀️</span>
+                <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+                <svg x-show="darkMode" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
             </button>
 
             <form method="POST" action="{{ route('logout') }}" class="inline">
@@ -242,8 +280,8 @@
                 <div class="flex items-center gap-3">
                     <div class="w-1 h-7 rounded-full bg-green-500"></div>
                     <div>
-                        <h2 class="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight">Liste des Inspections</h2>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wider">لائحة الفحوصات</p>
+                        <div class="font-vt text-[0.62rem] font-bold text-green-600 dark:text-green-400 tracking-[0.2em] uppercase mb-0.5">Terminal · Inspections</div>
+                        <h2 class="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight leading-none">Liste des Inspections</h2>
                     </div>
                 </div>
             </div>
@@ -285,6 +323,15 @@
                     Effacer
                 </button>
 
+                @if(auth()->user()->role === 'admin')
+                <button onclick="deleteAllLibre()" id="delete-all-btn"
+                        class="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-red-500 hover:text-white hover:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-all border border-red-200 dark:border-red-800/50 shine-effect">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Tout supprimer
+                </button>
+
 <button onclick="bulkDelete()" id="bulk-delete-btn" 
         class="hidden items-center gap-1.5 px-3 py-2 text-sm font-semibold text-red-500 hover:text-white hover:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-all border border-red-200 dark:border-red-800/50 shine-effect">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,6 +339,7 @@
     </svg>
     <span id="bulk-delete-count">0</span>
 </button>
+                @endif
 
                 <span id="filter-no-result" class="hidden text-xs font-semibold text-slate-400 dark:text-slate-500 italic ml-auto">Aucun résultat</span>
             </div>
@@ -301,9 +349,11 @@
                 <table class="w-full min-w-[1200px] text-left">
                     <thead>
                         <tr>
+                            @if(auth()->user()->role === 'admin')
                             <th class="w-[3%] text-center">
-                                <input type="checkbox" id="select-all" onchange="toggleAllCheckboxes()" class="rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/30 cursor-pointer">
+                                <input type="checkbox" id="select-all" onchange="toggleAllCheckboxes()" class="vt-checkbox">
                             </th>
+                            @endif
                             <th class="w-[14%]">Numéro de plaque</th>
                             <th class="w-[14%]">Nom Complet</th>
                             <th class="w-[7%] text-center">Cat.</th>
@@ -330,9 +380,11 @@
                             data-category="{{ $inspection->category }}"
                             data-filter-status="{{ $filterStatus }}">
 
+                            @if(auth()->user()->role === 'admin')
                             <td class="text-center">
-                                <input type="checkbox" class="row-checkbox rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/30 cursor-pointer" data-id="{{ $inspection->id }}" data-status="{{ $inspection->status }}">
+                                <input type="checkbox" class="row-checkbox vt-checkbox" data-id="{{ $inspection->id }}" data-status="{{ $inspection->status }}">
                             </td>
+                            @endif
                             <td class="font-plate font-bold text-green-600 dark:text-green-400 tracking-wider text-lg" dir="ltr">
                                 {{ str_replace('|', ' · ', $inspection->plate_number) }}
                             </td>
@@ -426,7 +478,7 @@
                         </tr>
                         @empty
                         <tr id="empty-state-row">
-                            <td colspan="{{ auth()->user()->role === 'admin' ? 9 : 8 }}" class="px-8 py-16 text-center">
+                            <td colspan="{{ auth()->user()->role === 'admin' ? 9 : 7 }}" class="px-8 py-16 text-center">
                                 <div class="flex flex-col items-center gap-3">
                                     <div class="p-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-slate-600">
                                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2m0 0h10m-10 0h10m1-10v4l2 2m0 0h1m-1 0v2"/></svg>
@@ -555,7 +607,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black text-gray-800 dark:text-white">Modifier l'inspection</h3>
-                        <p class="text-sm text-gray-400 dark:text-gray-500 font-medium">تعديل بيانات المركبة</p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 font-medium">Modifier les informations du véhicule</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeEditModal()" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all active:scale-90">
@@ -627,7 +679,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black text-gray-800 dark:text-white">Nouveau Véhicule</h3>
-                        <p class="text-sm text-gray-400 dark:text-gray-500 font-medium">إضافة مركبة جديدة</p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 font-medium">Ajouter un nouveau véhicule</p>
                     </div>
                 </div>
                 <button @click="showModal = false" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all active:scale-90">
@@ -693,7 +745,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black text-gray-800 dark:text-white">Démarrer le contrôle</h3>
-                        <p class="text-sm text-gray-400 dark:text-gray-500 font-medium">تأكيد بدء الفحص</p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 font-medium">Confirmer le démarrage de l'inspection</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeStartModal()" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all active:scale-90">
@@ -703,7 +755,7 @@
             <form id="startInspectionForm" onsubmit="submitStartForm(event)" class="px-6 py-5 space-y-4">
                 <input type="hidden" id="start_inspection_id">
                 
-                <!-- اختيار التقني -->
+                <!-- Sélection du technicien -->
                 <div class="space-y-1.5">
                     <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -714,7 +766,7 @@
                     </select>
                 </div>
 
-                <!-- كلمة مرور التقني -->
+                <!-- Mot de passe du technicien -->
                 <div class="space-y-1.5" x-data="{ showPass: false }">
                     <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -730,11 +782,11 @@
                     </div>
                 </div>
 
-                <!-- اختيار الممر -->
+                <!-- Sélection de la voie -->
                 <div class="space-y-1.5">
                     <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-4-4 4-4m6 8l4-4-4-4M4 4h16"/></svg>
-                        Lane (الممر)
+                        Voie (Lane)
                     </label>
                     <select id="start_lane" required class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-green-500 focus:ring-0 outline-none transition-all text-gray-800 dark:text-gray-100 font-medium text-sm">
                         <option value="">Sélectionner un m...</option>
@@ -760,6 +812,32 @@
         const activeIntervals = {};
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
+        // ── Shared AJAX helper ───────────────────────────────────────
+        // Wraps fetch with CSRF header, JSON handling, and consistent error messages.
+        async function apiFetch(url, { method = 'GET', body = null } = {}) {
+            const headers = {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            };
+            if (body !== null) headers['Content-Type'] = 'application/json';
+
+            const response = await fetch(url, {
+                method,
+                headers,
+                body: body !== null ? JSON.stringify(body) : undefined
+            });
+
+            let data = null;
+            try { data = await response.json(); } catch { /* no JSON body */ }
+
+            if (!response.ok) {
+                const message = data?.message || (data?.errors ? Object.values(data.errors)[0][0] : null) || 'Une erreur est survenue.';
+                throw new Error(message);
+            }
+            return data;
+        }
+
         function filterTable() {
             const search  = document.getElementById('search-input').value.toLowerCase().trim();
             const cat     = document.getElementById('filter-category').value;
@@ -783,6 +861,16 @@
 
             const noResult = document.getElementById('filter-no-result');
             if (noResult) noResult.classList.toggle('hidden', visibleCount > 0);
+
+            // Uncheck rows hidden by the filter so they don't get silently included in bulk actions
+            document.querySelectorAll('#inspections-table-body tr[id^="row-"]').forEach(row => {
+                if (row.style.display === 'none') {
+                    const cb = row.querySelector('.row-checkbox');
+                    if (cb) cb.checked = false;
+                }
+            });
+            updateBulkDeleteBtn();
+            syncSelectAllState();
         }
 
         function resetFilters() {
@@ -793,21 +881,14 @@
         }
 
         function updateTotalCount() {
-            fetch('/inspections/count', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken
-                }
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    const el = document.getElementById('total-inspections-count');
-                    if (el) el.textContent = data.count;
-                }
-            })
-            .catch(() => {});
+            apiFetch('/inspections/count')
+                .then(data => {
+                    if (data.success) {
+                        const el = document.getElementById('total-inspections-count');
+                        if (el) el.textContent = data.count;
+                    }
+                })
+                .catch(() => {});
         }
 
         function startSingleTimer(timer) {
@@ -912,31 +993,24 @@
             const submitBtn = document.getElementById('edit-submit-btn');
             if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'Enregistrement…'; }
 
-            fetch(`/inspections/${id}`, {
+            apiFetch(`/inspections/${id}`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
+                body: {
                     plate_number: document.getElementById('edit_plate_number').value,
                     owner_name:   document.getElementById('edit_owner_name').value,
                     category:     document.getElementById('edit_category').value
-                })
+                }
             })
-            .then(r => { if (!r.ok) return r.json().then(e => { throw new Error(e.message || 'Erreur serveur'); }); return r.json(); })
             .then(data => {
                 if (data.success) {
-                    showAlert('success', 'تم التعديل', 'تم تحديث البيانات بنجاح');
+                    showAlert('success', 'Modifié', 'Les informations ont été mises à jour avec succès.');
                     closeEditModal();
                     const row = document.getElementById(`row-${id}`);
                     if (row && data.inspection) updateRowData(row, data.inspection);
                     updateTotalCount();
                 }
             })
-            .catch(err => showAlert('error', 'خطأ', err.message || 'حدث خطأ'))
+            .catch(err => showAlert('error', 'Erreur', err.message))
             .finally(() => { if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Enregistrer'; } });
         }
 
@@ -946,24 +1020,24 @@
             const formatted = parts.length === 3 ? `${parts[0]} · ${parts[1]} · ${parts[2]}` : inspection.plate_number;
 
             const cells = row.getElementsByTagName('td');
-            // المؤشرات: 0=checkbox, 1=plaque, 2=propriétaire, 3=cat, 4=status, 5=temps, 6=technicien, 7=lane
+            // Indices : 0=checkbox, 1=plaque, 2=propriétaire, 3=cat, 4=statut, 5=temps, 6=technicien, 7=lane
             if (cells.length >= 8) {
                 cells[1].innerText = formatted;
                 cells[2].innerText = inspection.owner_name || '---';
-                
-                // تحديث data attributes
+
+                // Mise à jour des data attributes
                 row.dataset.plate    = inspection.plate_number.toLowerCase();
                 row.dataset.owner    = (inspection.owner_name || '').toLowerCase();
                 row.dataset.category = inspection.category;
 
-                // تحديث الـ badge
+                // Mise à jour du badge catégorie
                 const badge = cells[3].querySelector('span');
                 if (badge) {
                     badge.innerText   = inspection.category;
                     badge.className   = `badge ${inspection.category === 'PL' ? 'text-orange-600 bg-orange-50 border border-orange-200 dark:text-orange-400 dark:bg-orange-950/30 dark:border-orange-900/50' : 'text-green-700 bg-green-50 border border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900/50'}`;
                 }
-                
-                // تحديث التقني والممر
+
+                // Mise à jour du technicien et de la ligne
                 cells[6].textContent = inspection.technician_name || '—';
                 if (inspection.lane) {
                     const laneColors = {
@@ -993,90 +1067,56 @@
         // ── Bulk Delete ─────────────────────────────────────────────────
         function toggleAllCheckboxes() {
             const checked = document.getElementById('select-all').checked;
-            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checked);
+            document.querySelectorAll('#inspections-table-body tr[id^="row-"]').forEach(row => {
+                if (row.style.display === 'none') return; // ignore filtered-out rows
+                const cb = row.querySelector('.row-checkbox');
+                if (cb) cb.checked = checked;
+            });
             updateBulkDeleteBtn();
+        }
+
+        function syncSelectAllState() {
+            const visibleRows = Array.from(document.querySelectorAll('#inspections-table-body tr[id^="row-"]'))
+                .filter(row => row.style.display !== 'none');
+            const visibleChecks = visibleRows.map(row => row.querySelector('.row-checkbox')).filter(Boolean);
+            const selectAll = document.getElementById('select-all');
+            if (!selectAll) return;
+            const total   = visibleChecks.length;
+            const checked = visibleChecks.filter(cb => cb.checked).length;
+            selectAll.checked       = total > 0 && checked === total;
+            selectAll.indeterminate = checked > 0 && checked < total;
         }
 
         function updateBulkDeleteBtn() {
     const checked = document.querySelectorAll('.row-checkbox:checked');
     const btn = document.getElementById('bulk-delete-btn');
     const count = document.getElementById('bulk-delete-count');
-    
+
     if (checked.length > 0) {
         btn.classList.remove('hidden');
-        btn.classList.add('flex'); // ✅ إضافة flex عند الإظهار
+        btn.classList.add('flex'); // affiche le bouton en mode flex
         count.textContent = checked.length;
     } else {
         btn.classList.add('hidden');
-        btn.classList.remove('flex'); // ✅ إزالة flex عند الإخفاء
+        btn.classList.remove('flex'); // masque le bouton
     }
 }
 
-        // ربط التحديث عند تغيير أي checkbox
+        // Sync "select all" state whenever any row checkbox changes
         document.addEventListener('change', function(e) {
             if (e.target.classList.contains('row-checkbox')) {
                 updateBulkDeleteBtn();
+                syncSelectAllState();
             }
         });
 
-        async function bulkDelete() {
-            const checked = document.querySelectorAll('.row-checkbox:checked');
-            const ids = Array.from(checked).map(cb => parseInt(cb.dataset.id));
-            
-            // التأكد من أن جميع الفحوصات بحالة Libre
-            const libreIds = [];
-            const nonLibreIds = [];
-            
-            checked.forEach(cb => {
-                if (cb.dataset.status === 'libre') {
-                    libreIds.push(parseInt(cb.dataset.id));
-                } else {
-                    nonLibreIds.push(parseInt(cb.dataset.id));
-                }
-            });
-            
-            if (libreIds.length === 0) {
-                Swal.fire('تنبيه', 'لا توجد فحوصات بحالة Libre للحذف', 'warning');
-                return;
-            }
-            
-            if (nonLibreIds.length > 0) {
-                const confirm = await Swal.fire({
-                    title: 'تنبيه',
-                    text: `${nonLibreIds.length} فحص(ات) ليس بحالة Libre. هل تريد حذف Libre فقط؟`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'نعم، احذف Libre فقط',
-                    cancelButtonText: 'إلغاء'
-                });
-                if (!confirm.isConfirmed) return;
-            }
-            
-            const result = await Swal.fire({
-                title: `حذف ${libreIds.length} فحص(ات)؟`,
-                text: 'سيتم نقلها إلى سلة المحذوفات',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626',
-                confirmButtonText: 'نعم، احذف',
-                cancelButtonText: 'إلغاء'
-            });
-            
-            if (!result.isConfirmed) return;
-            
+        async function performBulkDelete(libreIds) {
             try {
-                const response = await fetch('/inspections/bulk-delete', {
+                const data = await apiFetch('/inspections/bulk-delete', {
                     method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ ids: libreIds })
+                    body: { ids: libreIds }
                 });
-                
-                const data = await response.json();
-                
+
                 if (data.success) {
                     libreIds.forEach(id => {
                         const row = document.getElementById(`row-${id}`);
@@ -1091,16 +1131,93 @@
                             });
                         }
                     });
-                    
-                    document.getElementById('select-all').checked = false;
+
+                    const selectAll = document.getElementById('select-all');
+                    if (selectAll) selectAll.checked = false;
                     updateBulkDeleteBtn();
-                    
-                    Swal.fire('تم', data.message || `تم حذف ${libreIds.length} فحص(ات)`, 'success');
+
+                    Swal.fire('Terminé', data.message || `${libreIds.length} véhicule(s) supprimé(s)`, 'success');
                     setTimeout(updateTotalCount, 500);
                 }
             } catch (error) {
-                Swal.fire('خطأ', 'حدث خطأ أثناء الحذف', 'error');
+                Swal.fire('Erreur', error.message || "Une erreur est survenue lors de la suppression.", 'error');
             }
+        }
+
+        async function bulkDelete() {
+            const checked = document.querySelectorAll('.row-checkbox:checked');
+            const ids = Array.from(checked).map(cb => parseInt(cb.dataset.id));
+
+            // On ne peut supprimer (déplacer vers la corbeille) que les véhicules à l'état Libre
+            const libreIds = [];
+            const nonLibreIds = [];
+
+            checked.forEach(cb => {
+                if (cb.dataset.status === 'libre') {
+                    libreIds.push(parseInt(cb.dataset.id));
+                } else {
+                    nonLibreIds.push(parseInt(cb.dataset.id));
+                }
+            });
+
+            if (libreIds.length === 0) {
+                Swal.fire('Attention', 'Aucun véhicule sélectionné n\'est à l\'état Libre.', 'warning');
+                return;
+            }
+
+            if (nonLibreIds.length > 0) {
+                const confirm = await Swal.fire({
+                    title: 'Attention',
+                    text: `${nonLibreIds.length} véhicule(s) ne sont pas à l'état Libre. Supprimer uniquement ceux qui le sont ?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Oui, supprimer les Libre',
+                    cancelButtonText: 'Annuler'
+                });
+                if (!confirm.isConfirmed) return;
+            }
+
+            const result = await Swal.fire({
+                title: `Supprimer ${libreIds.length} véhicule(s) ?`,
+                text: 'Ils seront déplacés vers la corbeille',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'Oui, supprimer',
+                cancelButtonText: 'Annuler'
+            });
+
+            if (!result.isConfirmed) return;
+
+            performBulkDelete(libreIds);
+        }
+
+        // ── Delete all (visible + Libre) ──────────────────────────────
+        async function deleteAllLibre() {
+            const libreIds = Array.from(document.querySelectorAll('#inspections-table-body tr[id^="row-"]'))
+                .filter(row => row.style.display !== 'none')
+                .map(row => row.querySelector('.row-checkbox'))
+                .filter(cb => cb && cb.dataset.status === 'libre')
+                .map(cb => parseInt(cb.dataset.id));
+
+            if (libreIds.length === 0) {
+                Swal.fire('Attention', "Aucun véhicule à l'état Libre à supprimer.", 'warning');
+                return;
+            }
+
+            const result = await Swal.fire({
+                title: `Supprimer tous les véhicules Libre (${libreIds.length}) ?`,
+                text: 'Cette action déplace tous les véhicules visibles à l\'état Libre vers la corbeille.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'Oui, tout supprimer',
+                cancelButtonText: 'Annuler'
+            });
+
+            if (!result.isConfirmed) return;
+
+            performBulkDelete(libreIds);
         }
 
         // ── Start Inspection Modal ──────────────────────────────────────
@@ -1114,28 +1231,21 @@
             const card = document.getElementById('startModalContent');
             const overlay = document.getElementById('startModalOverlay');
             
-            // جلب قائمة التقنيين
-            fetch('/technicians/active', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken
-                }
-            })
-            .then(r => r.json())
-            .then(data => {
-                const select = document.getElementById('start_technician');
-                select.innerHTML = '<option value="">Sélectionner un technicien...</option>';
-                if (data.success && data.technicians) {
-                    data.technicians.forEach(tech => {
-                        const opt = document.createElement('option');
-                        opt.value = tech.identifier;
-                        opt.textContent = `${tech.name} (${tech.identifier})`;
-                        select.appendChild(opt);
-                    });
-                }
-            })
-            .catch(() => {});
+            // Récupération de la liste des techniciens actifs
+            apiFetch('/technicians/active')
+                .then(data => {
+                    const select = document.getElementById('start_technician');
+                    select.innerHTML = '<option value="">Sélectionner un technicien...</option>';
+                    if (data.success && data.technicians) {
+                        data.technicians.forEach(tech => {
+                            const opt = document.createElement('option');
+                            opt.value = tech.identifier;
+                            opt.textContent = `${tech.name} (${tech.identifier})`;
+                            select.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(() => {});
             
             modal.style.display = 'flex';
             void modal.offsetWidth;
@@ -1163,43 +1273,36 @@
 
         async function submitStartForm(event) {
             event.preventDefault();
-            
+
             const id = document.getElementById('start_inspection_id').value;
             const technicianIdentifier = document.getElementById('start_technician').value;
             const technicianPassword = document.getElementById('start_password').value;
             const lane = document.getElementById('start_lane').value;
-            
+
             if (!technicianIdentifier || !technicianPassword || !lane) {
-                Swal.fire('تنبيه', 'يرجى ملء جميع الحقول', 'warning');
+                Swal.fire('Attention', 'Veuillez remplir tous les champs.', 'warning');
                 return;
             }
-            
+
             const submitBtn = document.getElementById('start-submit-btn');
             submitBtn.disabled = true;
-            submitBtn.innerText = 'جاري التحقق...';
-            
+            submitBtn.innerText = 'Vérification…';
+
             try {
-                const response = await fetch(`/inspections/${id}/status`, {
+                const data = await apiFetch(`/inspections/${id}/status`, {
                     method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
+                    body: {
                         status: 'en_cours',
                         technician_identifier: technicianIdentifier,
                         technician_password: technicianPassword,
                         lane: lane
-                    })
+                    }
                 });
-                
-                const data = await response.json();
-                
+
                 if (data.success) {
                     closeStartModal();
-                    Swal.fire('✅', 'تم بدء الفحص بنجاح', 'success');
-                    
+                    Swal.fire('Succès', 'Le contrôle a démarré avec succès.', 'success');
+
                     const row = document.getElementById(`row-${id}`);
                     if (row && data.inspection) {
                         updateRowData(row, data.inspection);
@@ -1210,21 +1313,19 @@
                             btn.className = 'action-btn bg-green-600 hover:bg-green-700 text-white shadow-sm shadow-green-600/30 hover:scale-105 active:scale-95 shine-effect';
                         }
                         row.dataset.filterStatus = 'en_cours';
-                        // تحديث حالة الفحص
+                        // Mise à jour du badge de statut
                         const statusCell = row.querySelector('.status-text');
                         if (statusCell) {
                             statusCell.innerHTML = '<span class="badge bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/60 status-en-cours">En cours</span>';
                         }
-                        // إظهار زر revert
+                        // Affichage du bouton de retour
                         const revertBtn = document.getElementById(`btn-revert-${id}`);
                         if (revertBtn) revertBtn.style.display = 'inline-flex';
                     }
                     updateTotalCount();
-                } else {
-                    Swal.fire('❌', data.message || 'بيانات التقني غير صحيحة', 'error');
                 }
             } catch (error) {
-                Swal.fire('❌', 'حدث خطأ أثناء بدء الفحص', 'error');
+                Swal.fire('Erreur', error.message || 'Identifiants du technicien incorrects.', 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'Démarrer';
@@ -1271,14 +1372,9 @@
             const payload    = { status: nextStatus };
             if (result) payload.result = result;
 
-            fetch(`/inspections/${id}/status`, {
-                method: 'PATCH',
-                headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                body: JSON.stringify(payload)
-            })
-            .then(r => r.json())
+            apiFetch(`/inspections/${id}/status`, { method: 'PATCH', body: payload })
             .then(data => {
-                if (!data.success) throw new Error(data.message || 'Update failed');
+                if (!data.success) throw new Error(data.message || 'La mise à jour a échoué.');
 
                 const row       = document.getElementById(`row-${id}`);
                 const btn       = row?.querySelector('.action-btn');
@@ -1332,12 +1428,12 @@
                 }
 
                 updateTotalCount();
-                showAlert('success', 'تم التحديث', 'تم تحديث حالة الفحص بنجاح');
+                showAlert('success', 'Mis à jour', "Le statut de l'inspection a été mis à jour avec succès.");
             })
-            .catch(err => { console.error(err); showAlert('error', 'خطأ', 'حدث خطأ في تحديث الحالة'); });
+            .catch(err => { console.error(err); showAlert('error', 'Erreur', 'Une erreur est survenue lors de la mise à jour du statut.'); });
         }
 
-        // ── Trash ─────────────────────────────────────────────────
+        // ── Corbeille ─────────────────────────────────────────────
         function confirmTrash(id) {
             Swal.fire({
                 title: 'Êtes-vous sûr ?',
@@ -1349,16 +1445,7 @@
                 cancelButtonText: 'Annuler'
             }).then(result => {
                 if (result.isConfirmed) {
-                    fetch(`/inspections/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(r => r.json())
+                    apiFetch(`/inspections/${id}`, { method: 'DELETE' })
                     .then(data => {
                         if (data.success) {
                             const row = document.getElementById(`row-${id}`);
@@ -1371,12 +1458,12 @@
                             showAlert('success', 'Succès', data.message);
                         }
                     })
-                    .catch(() => showAlert('error', 'Erreur', 'Une erreur est survenue'));
+                    .catch(err => showAlert('error', 'Erreur', err.message));
                 }
             });
         }
 
-        // ── Revert ─────────────────────────────────────────────────
+        // ── Retour à l'état précédent ────────────────────────────────
         function confirmRevert(id) {
             Swal.fire({
                 title: "Annuler la dernière étape ?",
@@ -1386,16 +1473,7 @@
                 cancelButtonText: 'Non'
             }).then(result => {
                 if (result.isConfirmed) {
-                    fetch(`/inspections/${id}/revert`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(r => r.json())
+                    apiFetch(`/inspections/${id}/revert`, { method: 'POST' })
                     .then(data => {
                         if (data.success) {
                             const row        = document.getElementById(`row-${id}`);
@@ -1447,12 +1525,12 @@
                             Swal.fire({ icon: 'success', title: 'Succès', timer: 1000, showConfirmButton: false });
                         }
                     })
-                    .catch(() => showAlert('error', 'Erreur', 'Une erreur est survenue'));
+                    .catch(err => showAlert('error', 'Erreur', err.message));
                 }
             });
         }
 
-        // ── Add form ──────────────────────────────────────────────
+        // ── Formulaire d'ajout ───────────────────────────────────────
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('add-inspection-form');
             if (!form) return;
@@ -1462,34 +1540,20 @@
                 const submitBtn = form.querySelector('button[type="submit"]');
                 if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'Enregistrement…'; }
 
-                fetch(form.action, {
-                    method: 'POST',
-                    body: new FormData(form),
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(r => {
-                    if (!r.ok) return r.json().then(err => {
-                        let msg = 'يرجى التحقق من البيانات المدخلة';
-                        if (err.errors) msg = Object.values(err.errors)[0][0];
-                        else if (err.message) msg = err.message;
-                        throw new Error(msg);
-                    });
-                    return r.json();
-                })
+                const formData = new FormData(form);
+                const payload  = Object.fromEntries(formData.entries());
+
+                apiFetch(form.action, { method: 'POST', body: payload })
                 .then(data => {
                     if (data.success) {
                         form.reset();
                         window.dispatchEvent(new CustomEvent('close-inspection-modal'));
                         appendInspectionToTable(data.inspection);
                         updateTotalCount();
-                        Swal.fire({ icon: 'success', title: 'Succès', text: data.message || 'تمت إضافة المركبة بنجاح', timer: 1500, showConfirmButton: false });
+                        Swal.fire({ icon: 'success', title: 'Succès', text: data.message || 'Le véhicule a été ajouté avec succès.', timer: 1500, showConfirmButton: false });
                     }
                 })
-                .catch(err => showAlert('error', 'خطأ', err.message || 'يرجى التحقق من البيانات المدخلة'))
+                .catch(err => showAlert('error', 'Erreur', err.message || 'Veuillez vérifier les informations saisies.'))
                 .finally(() => { if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Enregistrer'; } });
             });
         });
@@ -1534,7 +1598,7 @@
 
             newRow.innerHTML = `
                 <td class="text-center">
-                    <input type="checkbox" class="row-checkbox rounded border-slate-300 dark:border-slate-600 text-green-600 focus:ring-green-500/30 cursor-pointer" data-id="${inspection.id}" data-status="libre">
+                    <input type="checkbox" class="row-checkbox vt-checkbox" data-id="${inspection.id}" data-status="libre">
                 </td>
                 <td class="font-plate font-bold text-green-600 dark:text-green-400 tracking-wider text-lg" dir="ltr">${safeFormatted}</td>
                 <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[150px]">${safeOwner}</td>
@@ -1601,7 +1665,15 @@
                     const row        = document.getElementById(`row-${inspection.id}`);
 
                     if (actionType === 'delete' && row) {
-                        gsap.to(row, { opacity: 0, x: 30, duration: 0.35, ease: 'power2.in', onComplete: () => { row.remove(); updateTotalCount(); } });
+                        gsap.to(row, {
+                            opacity: 0, x: 30, duration: 0.35, ease: 'power2.in',
+                            onComplete: () => {
+                                row.remove();
+                                updateTotalCount();
+                                updateBulkDeleteBtn();
+                                syncSelectAllState();
+                            }
+                        });
                         return;
                     }
 
@@ -1647,7 +1719,7 @@
                             }
                         }
 
-                        // تحديث عمود التقني والممر
+                        // Mise à jour de la colonne technicien et voie
                         const cells = row.getElementsByTagName('td');
                         if (cells.length >= 8) {
                             cells[6].textContent = inspection.technician_name || '—';
@@ -1667,7 +1739,12 @@
                             row.style.transition = 'all 0.5s ease';
                             row.style.opacity    = '0';
                             row.style.transform  = 'translateX(30px)';
-                            setTimeout(() => { row.remove(); updateTotalCount(); }, 500);
+                            setTimeout(() => {
+                                row.remove();
+                                updateTotalCount();
+                                updateBulkDeleteBtn();
+                                syncSelectAllState();
+                            }, 500);
                         }
 
                         updateTotalCount();
@@ -1676,6 +1753,12 @@
                             appendInspectionToTable(inspection);
                             updateTotalCount();
                         }
+                    } else if (actionType === 'bulk_delete') {
+                        // Chaque véhicule est déjà retiré via son propre événement 'delete';
+                        // on force une resynchronisation finale du compteur et des cases à cocher.
+                        updateTotalCount();
+                        updateBulkDeleteBtn();
+                        syncSelectAllState();
                     }
                 });
         });
@@ -1691,15 +1774,7 @@
             Object.values(els).forEach(el => { if (el) { el.textContent = '…'; el.style.opacity = '0.4'; } });
 
             try {
-                const response = await fetch('/inspections/daily-stats', {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    }
-                });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const data = await response.json();
+                const data = await apiFetch('/inspections/daily-stats');
                 if (data.success) {
                     const s = data.stats;
                     const set = (el, val) => { if (el) { el.textContent = val ?? 0; el.style.opacity = '1'; } };
