@@ -175,6 +175,12 @@
         }
         .dark .vt-checkbox:indeterminate { background-color: #22c55e; border-color: #22c55e; }
 
+        @keyframes rowHighlightFlash {
+            0%   { background-color: rgba(22, 163, 74, 0.18); }
+            100% { background-color: transparent; }
+        }
+        .row-highlight { animation: rowHighlightFlash 1.2s ease-out; }
+
         /* Start Modal Styles */
         #startInspectionModal .modal-card {
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -198,6 +204,20 @@
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/uplogo.png') }}">
 </head>
 <body @class(['bg-slate-50', 'dark:bg-[#0a0f1a]', 'text-slate-800', 'dark:text-slate-200', 'transition-colors', 'duration-300', 'min-h-screen', 'flex', 'flex-col'])>
+
+    @if(auth()->user()->role !== 'admin')
+    <!-- MAINTENANCE OVERLAY (écran uniquement) -->
+    <div id="maintenance-overlay"
+         class="fixed inset-0 z-[999] flex-col items-center justify-center gap-4 bg-slate-950/97 backdrop-blur-sm text-center px-6 {{ $maintenanceMode ? 'flex' : 'hidden' }}">
+        <div class="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L1.5 3l1.5-1.5L7.5 4.5v1.409l4.26 4.26"/></svg>
+        </div>
+        <h1 class="font-vt text-xl sm:text-2xl font-bold text-white tracking-wide">Maintenance en cours</h1>
+        <p id="maintenance-message" class="text-sm text-slate-400 max-w-sm">
+            {{ $maintenanceMessage ?: "L'écran est temporairement en maintenance. Merci de patienter." }}
+        </p>
+    </div>
+    @endif
 
     <!-- NAVBAR -->
     <nav @class(['vitecma-nav', 'sticky', 'top-0', 'z-40', 'px-6', 'py-3', 'flex', 'flex-wrap', 'items-center', 'justify-between', 'gap-3', 'shadow-sm'])>
@@ -228,6 +248,14 @@
             </button>
 
             @if(auth()->user()->role === 'admin')
+                <button type="button" id="maintenance-toggle-btn" onclick="toggleMaintenanceMode()"
+                        data-enabled="{{ $maintenanceMode ? '1' : '0' }}"
+                        class="flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all font-semibold text-sm border shine-effect {{ $maintenanceMode ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/30' : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-white/10' }}"
+                        title="Activer/désactiver la maintenance pour l'écran">
+                    <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L1.5 3l1.5-1.5L7.5 4.5v1.409l4.26 4.26"/></svg>
+                    <span id="maintenance-toggle-label">{{ $maintenanceMode ? 'Maintenance : ON' : 'Maintenance : OFF' }}</span>
+                </button>
+
                 <a href="{{ route('inspections.trash') }}"
                    class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-lg transition-all font-semibold text-sm border border-slate-200/80 dark:border-white/10 shine-effect">
                     <svg class="w-4 h-4 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -880,6 +908,74 @@
             filterTable();
         }
 
+        // Moves a row to the top of the table (used when an inspection starts)
+        function moveRowToTop(row) {
+            const tableBody = document.getElementById('inspections-table-body');
+            if (!tableBody || !row) return;
+            if (tableBody.firstElementChild === row) return;
+            tableBody.insertBefore(row, tableBody.firstElementChild);
+            row.classList.add('row-highlight');
+            setTimeout(() => row.classList.remove('row-highlight'), 1200);
+        }
+
+        // Active/désactive le mode maintenance pour les utilisateurs "écran"
+        async function toggleMaintenanceMode() {
+            const btn = document.getElementById('maintenance-toggle-btn');
+            if (!btn) return;
+            const currentlyEnabled = btn.dataset.enabled === '1';
+            const nextEnabled = !currentlyEnabled;
+
+            let message = null;
+            if (nextEnabled) {
+                const { value } = await Swal.fire({
+                    title: 'Activer la maintenance',
+                    input: 'text',
+                    inputPlaceholder: "Message affiché à l'écran (optionnel)",
+                    showCancelButton: true,
+                    confirmButtonText: 'Activer',
+                    cancelButtonText: 'Annuler',
+                    confirmButtonColor: '#f59e0b',
+                });
+                if (value === undefined) return; // annulé
+                message = value || null;
+            } else {
+                const confirm = await Swal.fire({
+                    title: 'Désactiver la maintenance ?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Désactiver',
+                    cancelButtonText: 'Annuler',
+                    confirmButtonColor: '#16a34a',
+                });
+                if (!confirm.isConfirmed) return;
+            }
+
+            try {
+                const data = await apiFetch('/maintenance/toggle', {
+                    method: 'POST',
+                    body: { enabled: nextEnabled, message }
+                });
+                if (data.success) {
+                    btn.dataset.enabled = data.enabled ? '1' : '0';
+                    const label = document.getElementById('maintenance-toggle-label');
+                    if (label) label.textContent = data.enabled ? 'Maintenance : ON' : 'Maintenance : OFF';
+                    btn.classList.toggle('bg-amber-500/10', data.enabled);
+                    btn.classList.toggle('hover:bg-amber-500/20', data.enabled);
+                    btn.classList.toggle('text-amber-500', data.enabled);
+                    btn.classList.toggle('border-amber-500/30', data.enabled);
+                    btn.classList.toggle('bg-slate-100', !data.enabled);
+                    btn.classList.toggle('dark:bg-white/5', !data.enabled);
+                    btn.classList.toggle('text-slate-600', !data.enabled);
+                    btn.classList.toggle('dark:text-slate-300', !data.enabled);
+                    btn.classList.toggle('border-slate-200/80', !data.enabled);
+                    btn.classList.toggle('dark:border-white/10', !data.enabled);
+                    Swal.fire({ icon: 'success', title: data.enabled ? 'Maintenance activée' : 'Maintenance désactivée', timer: 1200, showConfirmButton: false });
+                }
+            } catch (err) {
+                Swal.fire('Erreur', err.message || "Impossible de changer l'état de maintenance.", 'error');
+            }
+        }
+
         // Sets the navbar total count directly (value comes from the server:
         // either the AJAX response's `totalCount` field, or the Reverb
         // broadcast's `totalCount` field — there is no separate endpoint).
@@ -1329,6 +1425,7 @@
                     const row = document.getElementById(`row-${id}`);
                     if (row && data.inspection) {
                         updateRowData(row, data.inspection);
+                        moveRowToTop(row);
                         const btn = row.querySelector('.action-btn');
                         if (btn) {
                             btn.textContent = 'Valider';
@@ -1620,9 +1717,11 @@
             const safePlate     = escapeHtml(inspection.plate_number);
 
             newRow.innerHTML = `
+                @if(auth()->user()->role === 'admin')
                 <td class="text-center">
                     <input type="checkbox" class="row-checkbox vt-checkbox" data-id="${inspection.id}" data-status="libre">
                 </td>
+                @endif
                 <td class="font-plate font-bold text-green-600 dark:text-green-400 tracking-wider text-lg" dir="ltr">${safeFormatted}</td>
                 <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[150px]">${safeOwner}</td>
                 <td class="text-center">
@@ -1681,6 +1780,19 @@
 
             if (typeof Echo === 'undefined') return;
 
+            // Écran de maintenance en temps réel (n'affecte pas l'admin)
+            const isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
+            Echo.channel('maintenance-channel')
+                .listen('.maintenance.changed', (data) => {
+                    if (isAdmin) return; // l'admin n'est jamais bloqué par la maintenance
+                    const overlay = document.getElementById('maintenance-overlay');
+                    if (!overlay) return;
+                    const msgEl = document.getElementById('maintenance-message');
+                    if (msgEl && data.message) msgEl.textContent = data.message;
+                    overlay.classList.toggle('hidden', !data.enabled);
+                    overlay.classList.toggle('flex', data.enabled);
+                });
+
             Echo.channel('inspections-channel')
                 .listen('.inspection.changed', (data) => {
                     const inspection = data.inspection;
@@ -1704,6 +1816,10 @@
                     if ((actionType === 'update' || actionType === 'revert') && row) {
                         const fs = inspection.status === 'valider' ? (inspection.result || 'valider') : inspection.status;
                         row.dataset.filterStatus = fs;
+
+                        if (inspection.status === 'en_cours') {
+                            moveRowToTop(row);
+                        }
 
                         const statusCell = row.querySelector('.status-text');
                         if (statusCell) {

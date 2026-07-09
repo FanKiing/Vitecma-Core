@@ -44,7 +44,10 @@ class InspectionController extends Controller
                                   ->orderBy('created_at', 'desc')
                                   ->paginate(53);
 
-        return view('dashboard', compact('inspections', 'dailyStats'));
+        $maintenanceMode    = \App\Http\Controllers\MaintenanceController::isEnabled();
+        $maintenanceMessage = \App\Http\Controllers\MaintenanceController::getMessage();
+
+        return view('dashboard', compact('inspections', 'dailyStats', 'maintenanceMode', 'maintenanceMessage'));
     }
 
     /**
