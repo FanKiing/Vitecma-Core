@@ -18,20 +18,20 @@ class InspectionStatusUpdated implements ShouldBroadcastNow
     public $totalCount; 
 
     /**
-     * استقبال بيانات المركبة ونوع الحركة عند إطلاق الإشارة.
-     * أنواع الحركات الممكنة: 'create', 'update', 'delete', 'revert', 'bulk_delete'
+     * Réception des données du véhicule et du type d'action lors du déclenchement de l'événement.
+     * Types d'actions possibles : 'create', 'update', 'delete', 'revert', 'bulk_delete'
      */
     public function __construct(Inspection $inspection, string $actionType = 'update', ?int $totalCount = null)
     {
         $this->inspection = $inspection;
         $this->actionType = $actionType;
         
-        // ✅ حساب العدد الإجمالي للسيارات (ما عدا المطبوعة)
+        // ✅ Calcul du nombre total de véhicules (hors imprimés)
         $this->totalCount = $totalCount ?? Inspection::where('status', '!=', 'imprimer')->count();
     }
 
     /**
-     * تحديد القناة العامة التي سيتم البث عبرها.
+     * Définit le canal public sur lequel l'événement sera diffusé.
      */
     public function broadcastOn(): array
     {
@@ -41,8 +41,8 @@ class InspectionStatusUpdated implements ShouldBroadcastNow
     }
 
     /**
-     * تسمية الإشارة باسم مخصص.
-     * (في الجافاسكريبت: listen('.inspection.changed'))
+     * Nomme l'événement avec un alias personnalisé.
+     * (en JavaScript : listen('.inspection.changed'))
      */
     public function broadcastAs(): string
     {
@@ -50,14 +50,14 @@ class InspectionStatusUpdated implements ShouldBroadcastNow
     }
 
     /**
-     * تحديد هيكل البيانات المرسل صراحة.
+     * Définit explicitement la structure des données envoyées.
      */
     public function broadcastWith(): array
     {
         return [
             'inspection' => $this->inspection->toArray(),
             'actionType' => $this->actionType,
-            'totalCount' => $this->totalCount, // ✅ إرسال العدد مع كل بث
+            'totalCount' => $this->totalCount, // ✅ Envoi du total à chaque diffusion
         ];
     }
 }
