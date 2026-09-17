@@ -3,7 +3,7 @@
 namespace App\Events;
 
 use App\Models\Inspection;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -31,12 +31,12 @@ class InspectionStatusUpdated implements ShouldBroadcastNow
     }
 
     /**
-     * Définit le canal public sur lequel l'événement sera diffusé.
+     * Définit le canal privé (authentification requise) sur lequel l'événement sera diffusé.
      */
     public function broadcastOn(): array
     {
         return [
-            new Channel('inspections-channel'),
+            new PrivateChannel('inspections-channel'),
         ];
     }
 

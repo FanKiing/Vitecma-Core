@@ -442,7 +442,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof Echo === 'undefined') return;
 
-            Echo.channel('inspections-channel')
+            Echo.private('inspections-channel')
                 .listen('.inspection.changed', (data) => {
                     const inspection = data.inspection;
                     const actionType = data.actionType;

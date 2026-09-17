@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -22,12 +22,12 @@ class MaintenanceModeChanged implements ShouldBroadcastNow
     }
 
     /**
-     * Canal public dédié à l'état de maintenance.
+     * Canal privé (authentification requise) dédié à l'état de maintenance.
      */
     public function broadcastOn(): array
     {
         return [
-            new Channel('maintenance-channel'),
+            new PrivateChannel('maintenance-channel'),
         ];
     }
 
