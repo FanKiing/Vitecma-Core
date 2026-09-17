@@ -4,26 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Inspection;
 use App\Models\Technician;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use App\Events\InspectionStatusUpdated;
 
 class InspectionController extends Controller
 {
-    private function checkAdmin(): void
-    {
-        /** @var User|null $user */
-        $user = Auth::user();
-        if (!$user || $user->role !== 'admin') {
-            abort(403, 'Unauthorized');
-        }
-    }
-
     private function currentTotalCount(): int
     {
         return Inspection::where('status', '!=', 'imprimer')->count();
@@ -70,8 +59,6 @@ class InspectionController extends Controller
      */
     public function updateStatus(Request $request, int $id): JsonResponse
     {
-        $this->checkAdmin();
-        
         $validated = $request->validate([
             'status' => 'required|in:libre,en_cours,valider,imprimer',
             'result' => 'nullable|in:favorable,defavorable',
@@ -125,14 +112,12 @@ class InspectionController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $this->checkAdmin();
         $inspection = Inspection::with('technician')->findOrFail($id);
         return response()->json($inspection);
     }
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $this->checkAdmin();
         $validated = $request->validate([
             'plate_number' => 'required|string|max:20',
             'owner_name'   => 'required|string|max:255',
@@ -162,7 +147,6 @@ class InspectionController extends Controller
 
     public function store(Request $request): JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $this->checkAdmin();
         $validated = $request->validate([
             'plate_number' => 'required|string|max:20',
             'owner_name'   => 'required|string|max:255',
@@ -197,7 +181,6 @@ class InspectionController extends Controller
 
     public function revertStatus(int $id): JsonResponse
     {
-        $this->checkAdmin();
         $inspection = Inspection::findOrFail($id);
 
         $newStatus = 'libre';
@@ -226,7 +209,6 @@ class InspectionController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
-        $this->checkAdmin();
         $inspection = Inspection::findOrFail($id);
         broadcast(new InspectionStatusUpdated($inspection, 'delete'))->toOthers();
         $inspection->delete();
@@ -243,8 +225,6 @@ class InspectionController extends Controller
      */
     public function bulkDelete(Request $request): JsonResponse
     {
-        $this->checkAdmin();
-        
         $validated = $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'integer|exists:inspections,id',
@@ -285,14 +265,12 @@ class InspectionController extends Controller
 
     public function trash(): View
     {
-        $this->checkAdmin();
         $inspections = Inspection::onlyTrashed()->with('technician')->paginate(10);
         return view('inspections.trash', compact('inspections'));
     }
 
     public function restore(int $id): JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $this->checkAdmin();
         $inspection = Inspection::withTrashed()->findOrFail($id);
         $inspection->restore();
 
@@ -307,7 +285,6 @@ class InspectionController extends Controller
 
     public function forceDestroy(int $id): JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $this->checkAdmin();
         $inspection = Inspection::onlyTrashed()->findOrFail($id);
         $inspection->forceDelete();
 
@@ -319,7 +296,6 @@ class InspectionController extends Controller
 
     public function emptyTrash(): JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $this->checkAdmin();
         Inspection::onlyTrashed()->forceDelete();
 
         if (request()->ajax() || request()->wantsJson()) {
@@ -330,7 +306,6 @@ class InspectionController extends Controller
 
     public function archive(Request $request): View
     {
-        $this->checkAdmin();
         $inspections = Inspection::where('status', 'imprimer')
                                  ->with('technician')
                                  ->orderBy('archived_at', 'desc')

@@ -1782,7 +1782,7 @@
 
             // Écran de maintenance en temps réel (n'affecte pas l'admin)
             const isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
-            Echo.channel('maintenance-channel')
+            Echo.private('maintenance-channel')
                 .listen('.maintenance.changed', (data) => {
                     if (isAdmin) return; // l'admin n'est jamais bloqué par la maintenance
                     const overlay = document.getElementById('maintenance-overlay');
@@ -1793,7 +1793,7 @@
                     overlay.classList.toggle('flex', data.enabled);
                 });
 
-            Echo.channel('inspections-channel')
+            Echo.private('inspections-channel')
                 .listen('.inspection.changed', (data) => {
                     const inspection = data.inspection;
                     const actionType = data.actionType;

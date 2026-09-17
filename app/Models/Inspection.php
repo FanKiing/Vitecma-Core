@@ -13,6 +13,7 @@ class Inspection extends Model
     protected $fillable = [
         'plate_number',
         'owner_name',
+        'phone_number',
         'category',
         'status',
         'started_at',

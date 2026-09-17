@@ -10,22 +10,10 @@ use Illuminate\Validation\ValidationException;
 class TechnicianController extends Controller
 {
     /**
-     * التحقق من أن المستخدم Admin
-     */
-    private function checkAdmin(): void
-    {
-        $user = auth()->user();
-        if (!$user || $user->role !== 'admin') {
-            abort(403, 'Unauthorized');
-        }
-    }
-
-    /**
      * عرض قائمة التقنيين (للمسؤول فقط)
      */
     public function index()
     {
-        $this->checkAdmin();
         $technicians = Technician::all();
         return response()->json(['success' => true, 'technicians' => $technicians]);
     }
@@ -35,8 +23,6 @@ class TechnicianController extends Controller
      */
     public function store(Request $request)
     {
-        $this->checkAdmin();
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'identifier' => 'required|string|unique:technicians|max:50',
@@ -62,7 +48,6 @@ class TechnicianController extends Controller
      */
     public function show($id)
     {
-        $this->checkAdmin();
         $technician = Technician::findOrFail($id);
         return response()->json(['success' => true, 'technician' => $technician]);
     }
@@ -72,8 +57,6 @@ class TechnicianController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->checkAdmin();
-
         $technician = Technician::findOrFail($id);
 
         $validated = $request->validate([
@@ -101,7 +84,6 @@ class TechnicianController extends Controller
      */
     public function destroy($id)
     {
-        $this->checkAdmin();
         $technician = Technician::findOrFail($id);
         $technician->delete();
 
@@ -116,7 +98,6 @@ class TechnicianController extends Controller
      */
     public function toggleActive($id)
     {
-        $this->checkAdmin();
         $technician = Technician::findOrFail($id);
         $technician->is_active = !$technician->is_active;
         $technician->save();
