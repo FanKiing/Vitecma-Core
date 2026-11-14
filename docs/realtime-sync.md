@@ -1,6 +1,6 @@
 # Dashboard synchronization
 
-The application uses Fetch for commands and Laravel Echo/Reverb for private event notifications. Livewire is not involved. All dashboard viewers authenticate through the existing web session and private channels.
+The application uses Livewire 4 actions and DOM morphing, with Laravel Echo/Reverb for private event notifications. Legacy REST endpoints are retained for integrations. All dashboard viewers authenticate through the existing web session and private channels.
 
 ## Defects reproduced
 
@@ -8,13 +8,15 @@ Two isolated browser sessions were connected and subscribed successfully before 
 
 The old code maintained several independent JavaScript row renderers in addition to the Blade renderer. It used administrator column indexes for the screen table, rendered restored rows as `libre`, ignored edits in received events, and sometimes sent deletion notifications before deleting the record. Fetch omitted `X-Socket-ID`, so `toOthers()` did not exclude its sender. Reverting a printed inspection also cleared `started_at`, causing the next return to `en_cours` to lose its timer. Slow technician-list requests could reset a user's selection. External CDN failures made confirmation buttons fail with `Swal is not defined`.
 
-## Current flow
+## Current flow: Livewire 4 + Reverb
 
-1. A successful Fetch command includes `X-Socket-ID` when connected, persists its mutation and requests a fresh snapshot for its own page.
-2. Reverb sends an invalidation to other subscribers, which request the same snapshot.
-3. `/inspections/snapshot` renders the existing Blade row/pagination partials for the requesting user's role. It returns authoritative rows, counts, maintenance state, statistics and the server clock. Archive/trash scopes require the administrator role. Technician credentials are never returned.
-4. The client serializes snapshot requests, coalesces bursts and discards responses superseded by newer notifications. Filters, selected free rows and open forms are preserved. Identical row markup is not replaced.
-5. Successful private subscriptions, restored visibility, online/BFCache recovery and a 30-second visible-page fallback recover missed messages. The navbar reports live, fallback, reconnecting or interrupted synchronization.
+1. The existing dialogs invoke explicit `InspectionTable::command` actions through Livewire. Every command authorizes the current user and reuses the validated application operations. No inspection mutation Fetch competes with Livewire morphing.
+2. Reverb sends notifications on private channels. The PHP component declares `echo-private` listeners for inspection, maintenance and general dashboard changes, which refresh its server-rendered rows.
+3. Active inspections, archives and trash share one role-aware component. Scope is locked, archive/trash require the administrator role, and pagination is managed by Livewire. The snapshot endpoint remains available to existing API consumers; the component reuses the same builder internally without a second HTTP request.
+4. Only Livewire morphs table/pagination markup. JavaScript handles dialogs, filters, ephemeral checkbox selection and external indicators. Stable row keys and ignored timer text prevent competing renderers. Metadata events update counts, branding and maintenance after the morph.
+5. Private subscriptions, restored visibility and online/BFCache recovery refresh the component. `wire:poll.30s.visible` provides a bounded fallback. The navbar reports live, fallback, reconnecting or interrupted synchronization.
+
+Livewire's bundled Alpine starts once through the Vite ESM entry. Layouts declare `@livewireScriptConfig`; adding another Alpine runtime or manually replacing table HTML would reintroduce the earlier ownership conflict.
 
 Inspections, technician changes, branding, maintenance and trash clearing notify other dashboards. Bulk deletion is transactional and sends a single notification after all selected free rows are deleted. Broadcast transport errors are reported by Laravel but do not turn an already-saved mutation into a failed HTTP command; Reverb requests have bounded connection/request timeouts. The HTTP fallback remains available while Reverb is unavailable.
 

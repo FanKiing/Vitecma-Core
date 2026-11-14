@@ -5,7 +5,7 @@
                                 : $inspection->status;
                         @endphp
                         <tr class="group transition-all duration-200"
-                            id="row-{{ $inspection->id }}"
+                            id="row-{{ $inspection->id }}" wire:key="inspection-{{ $inspection->id }}"
                             data-plate="{{ strtolower($inspection->plate_number) }}"
                             data-owner="{{ strtolower($inspection->owner_name ?? '') }}"
                             data-category="{{ $inspection->category }}"
@@ -35,7 +35,7 @@
                                      data-start="{{ $inspection->started_at ? $inspection->started_at->toIso8601String() : 'invalid' }}"
                                      data-duration="{{ $inspection->category === 'VL' ? 20 : 30 }}"
                                      data-active="{{ $inspection->status === 'en_cours' ? 'true' : 'false' }}">
-                                    00:00
+                                    <span wire:ignore data-timer-text>00:00</span>
                                 </div>
                             </td>
                             <td class="text-center text-sm font-medium text-slate-600 dark:text-slate-300">

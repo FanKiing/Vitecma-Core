@@ -197,6 +197,7 @@
         }
     </style>
     <link rel="shortcut icon" href="{{ $siteIconUrl }}">
+    @livewireStyles
 </head>
 <body @class(['bg-slate-50', 'dark:bg-[#0a0f1a]', 'text-slate-800', 'dark:text-slate-200', 'transition-colors', 'duration-300', 'min-h-screen', 'flex', 'flex-col'])>
 
@@ -357,7 +358,7 @@
                     Tout supprimer
                 </button>
 
-<button onclick="bulkDelete()" id="bulk-delete-btn" 
+<button onclick="bulkDelete()" id="bulk-delete-btn"
         class="hidden items-center gap-1.5 px-3 py-2 text-sm font-semibold text-red-500 hover:text-white hover:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-all border border-red-200 dark:border-red-800/50 shine-effect">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -371,33 +372,10 @@
 
             <!-- Table -->
             <div class="w-full table-container">
-                <table class="w-full min-w-[1200px] text-left">
-                    <thead>
-                        <tr>
-                            @if(auth()->user()->role === 'admin')
-                            <th class="w-[3%] text-center">
-                                <input type="checkbox" id="select-all" onchange="toggleAllCheckboxes()" class="vt-checkbox">
-                            </th>
-                            @endif
-                            <th class="w-[14%]">Numéro de plaque</th>
-                            <th class="w-[14%]">Nom Complet</th>
-                            <th class="w-[7%] text-center">Cat.</th>
-                            <th class="w-[11%] text-center">Statut</th>
-                            <th class="w-[9%] text-center">Temps</th>
-                            <th class="w-[12%] text-center">Technicien</th>
-                            <th class="w-[8%] text-center">Line</th>
-                            @if(auth()->user()->role === 'admin')
-                            <th class="w-[22%] text-center">Actions</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody id="inspections-table-body" data-dashboard-sync="{{ route('inspections.snapshot') }}" data-server-time="{{ (int) round(microtime(true) * 1000) }}">
-                        @include('inspections.partials.rows', ['inspections' => $inspections])
-                    </tbody>
-                </table>
+                <livewire:inspection-table scope="dashboard" />
             </div>
 
-            <div id="inspection-pagination">@include('inspections.partials.pagination', ['inspections' => $inspections])</div>
+
         </div>
     </main>
 
@@ -655,7 +633,7 @@
             </div>
             <form id="startInspectionForm" onsubmit="submitStartForm(event)" class="px-6 py-5 space-y-4">
                 <input type="hidden" id="start_inspection_id">
-                
+
                 <!-- Sélection du technicien -->
                 <div class="space-y-1.5">
                     <label class="flex items-center gap-1.5 text-xs font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
@@ -716,6 +694,7 @@
         // ── Shared AJAX helper ───────────────────────────────────────
         // Wraps fetch with CSRF header, JSON handling, and consistent error messages.
         async function apiFetch(url, { method = 'GET', body = null } = {}) {
+            if (method !== 'GET') return window.inspectionCommand(url, method, body);
             const headers = {
                 'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json',
@@ -738,7 +717,6 @@
                 const message = data?.message || (data?.errors ? Object.values(data.errors)[0][0] : null) || 'Une erreur est survenue.';
                 throw new Error(message);
             }
-            if (method !== 'GET' && data?.success) await window.refreshDashboard?.();
             return data;
         }
 
@@ -864,7 +842,7 @@
 
             if (isNaN(startTime) || isNaN(duration) || !isActive) {
                 timer.dataset.expired = 'true';
-                timer.innerText = '00:00';
+                (timer.querySelector('[data-timer-text]') || timer).innerText = '00:00';
                 timer.classList.remove('text-amber-500');
                 timer.classList.add('text-gray-400', 'dark:text-gray-500');
                 return;
@@ -876,7 +854,7 @@
                 if (remaining <= 0) {
                     timer.dataset.expired = 'true';
                     clearInterval(activeIntervals[id]);
-                    timer.innerText = '00:00';
+                    (timer.querySelector('[data-timer-text]') || timer).innerText = '00:00';
                     timer.classList.remove('text-amber-500');
                     timer.classList.add('text-gray-400');
                     return;
@@ -884,7 +862,7 @@
                 timer.dataset.expired = 'false';
                 const m = Math.floor(remaining / 60000);
                 const s = Math.floor((remaining % 60000) / 1000);
-                timer.innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                (timer.querySelector('[data-timer-text]') || timer).innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
                 timer.classList.remove('text-gray-400','text-gray-500');
                 timer.classList.add('text-amber-500');
             };
@@ -894,7 +872,7 @@
 
         function initTimers() {
             document.querySelectorAll('.timer-display').forEach(timer => {
-                if (timer.dataset.active === 'true') startSingleTimer(timer);
+                startSingleTimer(timer);
             });
         }
 
@@ -1108,11 +1086,11 @@
         function openStartModal(id) {
             startInspectionId = id;
             document.getElementById('start_inspection_id').value = id;
-            
+
             const modal = document.getElementById('startInspectionModal');
             const card = document.getElementById('startModalContent');
             const overlay = document.getElementById('startModalOverlay');
-            
+
             // Récupération de la liste des techniciens actifs
             apiFetch('/technicians/active')
                 .then(data => {
@@ -1130,7 +1108,7 @@
                     }
                 })
                 .catch(() => {});
-            
+
             modal.style.display = 'flex';
             void modal.offsetWidth;
             setTimeout(() => {
@@ -1144,7 +1122,7 @@
             const modal = document.getElementById('startInspectionModal');
             const card = document.getElementById('startModalContent');
             const overlay = document.getElementById('startModalOverlay');
-            
+
             overlay?.classList.remove('opacity-100');
             card.classList.remove('scale-100', 'opacity-100');
             card.classList.add('scale-95', 'opacity-0');
@@ -1191,12 +1169,12 @@
                 });
                 return;
             }
-            
+
             if (currentStatus === 'libre') {
                 openStartModal(id);
                 return;
             }
-            
+
             const nextLabel = currentStatus === 'valider' ? 'Imprimer' : 'Imprimer';
             Swal.fire({
                 title: 'Confirmation',
@@ -1268,13 +1246,8 @@
 
 
 
-        window.renderDashboardSnapshot = function (data) {
-            const body = document.getElementById('inspections-table-body');
-            const selected = new Set(Array.from(body.querySelectorAll('.row-checkbox:checked'), cb => cb.dataset.id));
+        window.renderInspectionState = function (data) {
             Object.keys(activeIntervals).forEach(id => { clearInterval(activeIntervals[id]); delete activeIntervals[id]; });
-            if (window.dashboardRowsHtml !== data.html) { body.innerHTML = data.html; window.dashboardRowsHtml = data.html; }
-            body.querySelectorAll('.row-checkbox').forEach(cb => { cb.checked = selected.has(cb.dataset.id) && cb.dataset.status === 'libre'; });
-            document.getElementById('inspection-pagination').innerHTML = data.paginationHtml;
             setTotalCount(data.totalCount);
             initTimers();
             filterTable();
@@ -1343,5 +1316,6 @@
     </script>
 
 <x-branding-modal />
+    @livewireScriptConfig
 </body>
 </html>

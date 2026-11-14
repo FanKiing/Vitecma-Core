@@ -8,6 +8,7 @@
     <title>{{ $title ?? 'Accès au compte' }} — {{ $siteName }}</title>
     <link rel="icon" href="{{ $siteIconUrl }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="auth-page">
     <main class="auth-shell">
@@ -31,5 +32,6 @@
             <footer class="auth-footer"><span>© {{ date('Y') }} {{ $siteName }}</span><span>Gestion des visites techniques</span></footer>
         </section>
     </main>
+    @livewireScriptConfig
 </body>
 </html>

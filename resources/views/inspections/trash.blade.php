@@ -133,6 +133,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+    @livewireStyles
 </head>
 <body class="bg-slate-50 dark:bg-[#0a0f1a] text-slate-800 dark:text-slate-200 min-h-screen flex flex-col transition-colors duration-300">
 
@@ -229,24 +230,11 @@
 
             <!-- Table -->
             <div class="w-full table-container">
-                <table class="w-full min-w-[1000px] text-left">
-                    <thead>
-                        <tr>
-                            <th class="w-[20%]">Plaque d'immatriculation</th>
-                            <th class="w-[22%]">Propriétaire</th>
-                            <th class="w-[10%] text-center">Catégorie</th>
-                            <th class="w-[16%] text-center">Supprimé le</th>
-                            <th class="w-[32%] text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="trash-table-body" data-dashboard-sync="{{ route('inspections.snapshot', ['scope' => 'trash']) }}">
-                        @include('inspections.partials.trash-rows', ['inspections' => $inspections])
-                    </tbody>
-                </table>
+                <livewire:inspection-table scope="trash" />
             </div>
 
             <!-- Pagination -->
-            <div id="inspection-pagination">@include('inspections.partials.trash-pagination', ['inspections' => $inspections])</div>
+
         </div>
     </main>
 
@@ -299,22 +287,13 @@
 
             if (confirmed.isConfirmed) {
                 try {
-                    const response = await fetch(url, {
-                        method: method,
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'X-Socket-ID': window.Echo?.socketId() || '',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-
+                    await window.inspectionCommand(url, method, null);
+                    const response = { ok: true };
                     if (!response.ok) {
                         const error = await response.json().catch(() => ({}));
                         throw new Error(error.message || 'La modification a échoué.');
                     }
                     if (response.ok) {
-                        await window.refreshDashboard?.();
                         Swal.fire({ icon: 'success', title: successMsg, timer: 1200, showConfirmButton: false });
                     }
                 } catch (error) {
@@ -337,22 +316,13 @@
 
             if (confirmed.isConfirmed) {
                 try {
-                    const response = await fetch(url, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'X-Socket-ID': window.Echo?.socketId() || '',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-
+                    await window.inspectionCommand(url, 'DELETE', null);
+                    const response = { ok: true };
                     if (!response.ok) {
                         const error = await response.json().catch(() => ({}));
                         throw new Error(error.message || 'La modification a échoué.');
                     }
                     if (response.ok) {
-                        await window.refreshDashboard?.();
                         Swal.fire({ icon: 'success', title: 'Corbeille vidée', timer: 1200, showConfirmButton: false });
                     }
                 } catch (error) {
@@ -361,11 +331,8 @@
             }
         }
 
-        window.renderDashboardSnapshot = function(data) {
-            const body = document.getElementById('trash-table-body');
-            if (window.dashboardRowsHtml !== data.html) { body.innerHTML = data.html; window.dashboardRowsHtml = data.html; }
+        window.renderInspectionState = function(data) {
             document.getElementById('trash-count').textContent = data.totalCount;
-            document.getElementById('inspection-pagination').innerHTML = data.paginationHtml;
             const emptyButton = document.getElementById('empty-trash-btn');
             if (emptyButton) emptyButton.style.display = data.totalCount ? '' : 'none';
             filterTrash();
@@ -373,5 +340,6 @@
     </script>
 
 <x-branding-modal />
+    @livewireScriptConfig
 </body>
 </html>

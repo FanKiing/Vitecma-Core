@@ -84,6 +84,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+    @livewireStyles
 </head>
 <body class="bg-slate-50 dark:bg-[#0a0f1a] text-slate-800 dark:text-slate-200 min-h-screen flex flex-col transition-colors duration-300">
 
@@ -181,25 +182,11 @@
 
             <!-- Table -->
             <div class="w-full table-container">
-                <table class="w-full min-w-[1100px] text-left">
-                    <thead>
-                        <tr>
-                            <th class="w-[18%]">Plaque d'immatriculation</th>
-                            <th class="w-[20%]">Propriétaire</th>
-                            <th class="w-[10%] text-center">Catégorie</th>
-                            <th class="w-[14%] text-center">Résultat</th>
-                            <th class="w-[16%] text-center">Technicien</th>
-                            <th class="w-[22%] text-right">Date d'archivage</th>
-                        </tr>
-                    </thead>
-                    <tbody id="archive-table-body" data-dashboard-sync="{{ route('inspections.snapshot', ['scope' => 'archive']) }}">
-                        @include('inspections.partials.archive-rows', ['inspections' => $inspections])
-                    </tbody>
-                </table>
+                <livewire:inspection-table scope="archive" />
             </div>
 
             <!-- Pagination -->
-            <div id="inspection-pagination">@include('inspections.partials.archive-pagination', ['inspections' => $inspections])</div>
+
         </div>
     </main>
 
@@ -241,11 +228,8 @@
         }
 
         // ── Counter ────────────────────────────────────────────────
-        window.renderDashboardSnapshot = function(data) {
-            const body = document.getElementById('archive-table-body');
-            if (window.dashboardRowsHtml !== data.html) { body.innerHTML = data.html; window.dashboardRowsHtml = data.html; }
+        window.renderInspectionState = function(data) {
             document.getElementById('archive-count').textContent = data.totalCount;
-            document.getElementById('inspection-pagination').innerHTML = data.paginationHtml;
             const emptyButton = document.getElementById('empty-trash-btn');
             if (emptyButton) emptyButton.style.display = data.totalCount ? '' : 'none';
             filterArchive();
@@ -253,5 +237,6 @@
     </script>
 
 <x-branding-modal />
+    @livewireScriptConfig
 </body>
 </html>

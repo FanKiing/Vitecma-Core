@@ -4,7 +4,7 @@ import Pusher from 'pusher-js';
 window.Pusher = Pusher;
 
 const key = import.meta.env.VITE_REVERB_APP_KEY;
-window.Echo = key && document.querySelector('[data-dashboard-sync]') ? new Echo({
+window.Echo = key && document.querySelector('[data-livewire-inspections]') ? new Echo({
     broadcaster: 'reverb',
     key,
     wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
