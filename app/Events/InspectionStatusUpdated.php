@@ -3,19 +3,22 @@
 namespace App\Events;
 
 use App\Models\Inspection;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class InspectionStatusUpdated implements ShouldBroadcastNow
+class InspectionStatusUpdated implements ShouldBroadcastNow, ShouldRescue
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $inspection;
+
     public $actionType;
-    public $totalCount; 
+
+    public $totalCount;
 
     /**
      * Réception des données du véhicule et du type d'action lors du déclenchement de l'événement.
@@ -25,7 +28,7 @@ class InspectionStatusUpdated implements ShouldBroadcastNow
     {
         $this->inspection = $inspection;
         $this->actionType = $actionType;
-        
+
         // ✅ Calcul du nombre total de véhicules (hors imprimés)
         $this->totalCount = $totalCount ?? Inspection::where('status', '!=', 'imprimer')->count();
     }

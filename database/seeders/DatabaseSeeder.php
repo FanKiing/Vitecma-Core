@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,23 +11,11 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // ✅ تعطيل فحص المفاتيح الخارجية مؤقتاً
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // Add missing accounts without deleting data or resetting passwords.
+        $this->call([AdminSeeder::class, EcranSeeder::class]);
 
-        // مسح الجداول بالترتيب (الأبناء أولاً)
-        \App\Models\Inspection::truncate();
-        \App\Models\Technician::truncate();
-        \App\Models\User::truncate();
-
-        // ✅ إعادة تفعيل فحص المفاتيح الخارجية
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-        // تشغيل الـ Seeders
-        $this->call([
-            AdminSeeder::class,
-            EcranSeeder::class,
-            TechnicianSeeder::class,
-            InspectionSeeder::class,
-        ]);
+        if (app()->environment('local') && config('seeding.demo_data')) {
+            $this->call([TechnicianSeeder::class, InspectionSeeder::class]);
+        }
     }
 }

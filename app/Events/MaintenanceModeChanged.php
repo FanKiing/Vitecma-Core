@@ -2,17 +2,19 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MaintenanceModeChanged implements ShouldBroadcastNow
+class MaintenanceModeChanged implements ShouldBroadcastNow, ShouldRescue
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public bool $enabled;
+
     public ?string $message;
 
     public function __construct(bool $enabled, ?string $message = null)
