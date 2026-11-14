@@ -1,6 +1,6 @@
 @forelse($inspections as $inspection)
                         <tr class="trash-row transition-all duration-150 hover:shadow-sm"
-                            id="row-{{ $inspection->id }}"
+                            id="row-{{ $inspection->id }}" wire:key="inspection-{{ $inspection->id }}"
                             data-id="{{ $inspection->id }}"
                             data-plate="{{ strtolower($inspection->plate_number) }}"
                             data-owner="{{ strtolower($inspection->owner_name ?? '') }}"

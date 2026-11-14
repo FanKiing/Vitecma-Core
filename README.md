@@ -106,3 +106,9 @@ Administrators see **Nom et logo** in the navbar. The button opens a modal on th
 Initial accounts are opt-in: set `SEED_ADMIN_PASSWORD` and/or `SEED_SCREEN_PASSWORD` to unique passwords of at least 12 characters, then run `php artisan db:seed`. Existing accounts and passwords are preserved, and no inspection data is deleted. Demo data is disabled by default; it is restricted to the local environment. There are no default account passwords.
 
 Validation: `php artisan test`, `composer validate --no-check-publish`, `composer check-platform-reqs`, and `npm run build`. Tests use an isolated SQLite database.
+
+### Livewire + Reverb
+
+Active inspections, archives and trash use the `App\Livewire\InspectionTable` component. Inspection commands go through explicit Livewire actions, retaining the application's existing server validation and admin checks. Private Reverb events refresh the component; Livewire is the sole owner of table/pagination DOM. Existing REST endpoints remain available for integrations. The current dialogs are retained as a bridge during the gradual migration.
+
+Alpine is imported from Livewire's ESM bundle exactly once; layouts supply `@livewireScriptConfig`. Do not add a second Alpine script or assign table `innerHTML`. Timers run locally in ignored text spans, using server time and persisted `started_at`; they do not make per-second requests. Visible components reconcile every 30 seconds and after reconnect/resume.
