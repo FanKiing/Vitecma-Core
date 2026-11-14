@@ -15,11 +15,7 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitecma - Control Panel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <title>{{ $siteName }} - Control Panel</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -200,8 +196,7 @@
             box-shadow: 0 0 0 3px rgba(34,197,94,0.1);
         }
     </style>
-    <script>tailwind.config = { darkMode: 'class' }</script>
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/uplogo.png') }}">
+    <link rel="shortcut icon" href="{{ $siteIconUrl }}">
 </head>
 <body @class(['bg-slate-50', 'dark:bg-[#0a0f1a]', 'text-slate-800', 'dark:text-slate-200', 'transition-colors', 'duration-300', 'min-h-screen', 'flex', 'flex-col'])>
 
@@ -223,15 +218,16 @@
     <nav @class(['vitecma-nav', 'sticky', 'top-0', 'z-40', 'px-6', 'py-3', 'flex', 'flex-wrap', 'items-center', 'justify-between', 'gap-3', 'shadow-sm'])>
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-green-600/10 dark:bg-green-500/10 border border-green-600/20 dark:border-green-500/20 flex items-center justify-center overflow-hidden">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-8 h-8 object-contain">
+                <img src="{{ $siteLogoUrl }}" data-brand-logo alt="Logo" class="w-8 h-8 object-contain">
             </div>
             <div class="flex flex-col leading-tight">
-                <span class="font-vt text-lg font-bold tracking-[0.04em] text-slate-800 dark:text-white">VITECMA</span>
+                <span class="font-vt text-lg font-bold tracking-[0.04em] text-slate-800 dark:text-white max-w-[220px] truncate" data-brand-name>{{ $siteName }}</span>
                 <span class="font-vt text-[0.58rem] font-semibold text-green-600/70 dark:text-green-400/60 tracking-[0.2em] uppercase">Centre de Visite Technique</span>
             </div>
         </div>
 
         <div class="flex items-center flex-wrap gap-2">
+            <span id="realtime-status" role="status" class="text-xs text-slate-500" data-state="connecting">Synchronisation…</span>
             <div class="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-white/5 px-4 py-1.5 rounded-full border border-slate-200/60 dark:border-white/10">
                 <span>{{ date('Y-m-d') }}</span>
                 <span class="w-px h-4 bg-slate-300 dark:bg-white/20"></span>
@@ -248,6 +244,7 @@
             </button>
 
             @if(auth()->user()->role === 'admin')
+                <button type="button" @click="$dispatch('open-branding')" class="px-4 py-2 rounded-lg bg-green-600/10 text-green-700 dark:text-green-400 border border-green-600/20 text-sm font-semibold hover:bg-green-600/20">Nom et logo</button>
                 <button type="button" id="maintenance-toggle-btn" onclick="toggleMaintenanceMode()"
                         data-enabled="{{ $maintenanceMode ? '1' : '0' }}"
                         class="flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all font-semibold text-sm border shine-effect {{ $maintenanceMode ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border-amber-500/30' : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-white/10' }}"
@@ -394,137 +391,13 @@
                             @endif
                         </tr>
                     </thead>
-                    <tbody id="inspections-table-body">
-                        @forelse($inspections as $inspection)
-                        @php
-                            $filterStatus = $inspection->status === 'valider'
-                                ? ($inspection->result ?? 'valider')
-                                : $inspection->status;
-                        @endphp
-                        <tr class="group transition-all duration-200"
-                            id="row-{{ $inspection->id }}"
-                            data-plate="{{ strtolower($inspection->plate_number) }}"
-                            data-owner="{{ strtolower($inspection->owner_name ?? '') }}"
-                            data-category="{{ $inspection->category }}"
-                            data-filter-status="{{ $filterStatus }}">
-
-                            @if(auth()->user()->role === 'admin')
-                            <td class="text-center">
-                                <input type="checkbox" class="row-checkbox vt-checkbox" data-id="{{ $inspection->id }}" data-status="{{ $inspection->status }}">
-                            </td>
-                            @endif
-                            <td class="font-plate font-bold text-green-600 dark:text-green-400 tracking-wider text-lg" dir="ltr">
-                                {{ str_replace('|', ' · ', $inspection->plate_number) }}
-                            </td>
-                            <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[150px]">
-                                {{ $inspection->owner_name ?? '---' }}
-                            </td>
-                            <td class="text-center">
-                                <span class="badge {{ $inspection->category == 'PL' ? 'text-orange-600 bg-orange-50 border-orange-200 dark:text-orange-400 dark:bg-orange-950/30 dark:border-orange-900/50' : 'text-green-700 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900/50' }}">
-                                    {{ $inspection->category == 'PL' ? '🚛' : '🚗' }} {{ $inspection->category }}
-                                </span>
-                            </td>
-                            <td class="text-center status-text" id="status-{{ $inspection->id }}">
-                                @if($inspection->status === 'libre')
-                                    <span class="badge bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/15">Libre</span>
-                                @elseif($inspection->status === 'en_cours')
-                                    <span class="badge bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/60 status-en-cours">En cours</span>
-                                @elseif($inspection->status === 'valider' && $inspection->result === 'favorable')
-                                    <span class="badge bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">Favorable</span>
-                                @elseif($inspection->status === 'valider' && $inspection->result === 'defavorable')
-                                    <span class="badge bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/60">Défavorable</span>
-                                @elseif($inspection->status === 'valider')
-                                    <span class="badge bg-purple-50 dark:bg-violet-950/60 text-purple-600 dark:text-violet-400 border border-purple-200 dark:border-violet-800/60">Validé</span>
-                                @else
-                                    <span class="badge bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400">{{ __($inspection->status) }}</span>
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                <div class="timer-display font-plate text-lg font-bold text-slate-400 dark:text-slate-500 tabular-nums transition-colors duration-300"
-                                     id="timer-{{ $inspection->id }}"
-                                     data-id="{{ $inspection->id }}"
-                                     data-start="{{ $inspection->started_at ? $inspection->started_at->toIso8601String() : 'invalid' }}"
-                                     data-duration="{{ $inspection->category === 'VL' ? 20 : 30 }}"
-                                     data-active="{{ $inspection->status === 'en_cours' ? 'true' : 'false' }}">
-                                    00:00
-                                </div>
-                            </td>
-                            <td class="text-center text-sm font-medium text-slate-600 dark:text-slate-300">
-                                {{ $inspection->technician_name ?? '—' }}
-                            </td>
-                            <td class="text-center">
-                                @if($inspection->lane)
-                                    <span class="badge {{ $inspection->lane == 'VL2' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50' : ($inspection->lane == 'VL4' ? 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50' : 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50') }}">
-                                        {{ $inspection->lane }}
-                                    </span>
-                                @else
-                                    <span class="text-sm text-slate-400 dark:text-slate-500">—</span>
-                                @endif
-                            </td>
-                            @if(auth()->user()->role === 'admin')
-                            <td class="text-center">
-                                <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                                    <button type="button"
-                                            onclick="confirmRevert({{ $inspection->id }})"
-                                            id="btn-revert-{{ $inspection->id }}"
-                                            style="{{ $inspection->status === 'libre' ? 'display:none;' : 'display:inline-flex;' }}"
-                                            title="Retour à l'état précédent"
-                                            class="icon-btn border border-slate-200 dark:border-white/15 bg-white dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-200 dark:hover:border-amber-800/50 shine-effect">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-                                    </button>
-                                    <button type="button"
-                                            onclick="openEditModal({{ $inspection->id }})"
-                                            data-id="{{ $inspection->id }}"
-                                            data-plate="{{ $inspection->plate_number }}"
-                                            data-owner="{{ $inspection->owner_name ?? '' }}"
-                                            data-category="{{ $inspection->category }}"
-                                            title="Modifier"
-                                            class="edit-btn icon-btn border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:border-amber-300 dark:hover:border-amber-800/70 shine-effect">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                    </button>
-                                    <button type="button"
-                                            onclick="handleStatusUpdate({{ $inspection->id }}, this.dataset.status)"
-                                            data-status="{{ $inspection->status }}"
-                                            class="action-btn
-                                                {{ $inspection->status == 'libre' ? 'bg-slate-800 hover:bg-slate-700 dark:bg-white/15 dark:hover:bg-white/25 text-white dark:text-slate-200' : '' }}
-                                                {{ $inspection->status == 'en_cours' ? 'bg-green-600 hover:bg-green-700 text-white shadow-sm shadow-green-600/30' : '' }}
-                                                {{ $inspection->status == 'valider' ? 'bg-slate-900 dark:bg-slate-800 text-green-400 border border-green-500/40 hover:border-green-400 hover:text-green-300' : '' }}
-                                                {{ $inspection->status == 'imprimer' ? 'bg-blue-700 hover:bg-blue-800 text-white shadow-sm shadow-blue-600/30' : '' }}
-                                                hover:scale-105 active:scale-95 shine-effect">
-                                        {{ $inspection->status === 'libre' ? 'Démarrer' : ($inspection->status === 'en_cours' ? 'Valider' : 'Imprimer') }}
-                                    </button>
-
-                                    <button type="button"
-                                            onclick="confirmTrash({{ $inspection->id }})"
-                                            title="Supprimer"
-                                            class="icon-btn border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-300 dark:hover:border-red-800/60 shine-effect">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </div>
-                            </td>
-                            @endif
-                        </tr>
-                        @empty
-                        <tr id="empty-state-row">
-                            <td colspan="{{ auth()->user()->role === 'admin' ? 9 : 7 }}" class="px-8 py-16 text-center">
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="p-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-slate-600">
-                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2m0 0h10m-10 0h10m1-10v4l2 2m0 0h1m-1 0v2"/></svg>
-                                    </div>
-                                    <p class="text-sm font-medium text-slate-400 dark:text-slate-600">Aucun véhicule trouvé</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
+                    <tbody id="inspections-table-body" data-dashboard-sync="{{ route('inspections.snapshot') }}" data-server-time="{{ (int) round(microtime(true) * 1000) }}">
+                        @include('inspections.partials.rows', ['inspections' => $inspections])
                     </tbody>
                 </table>
             </div>
 
-            @if($inspections->hasPages())
-            <div class="px-6 py-4 border-t border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex justify-center [&_.pagination]:flex [&_.pagination]:items-center [&_.pagination]:gap-1 [&_.page-item_.page-link]:px-4 [&_.page-item_.page-link]:py-2 [&_.page-item_.page-link]:rounded-xl [&_.page-item_.page-link]:text-sm [&_.page-item_.page-link]:font-bold [&_.page-item_.page-link]:border [&_.page-item_.page-link]:border-slate-200 dark:[&_.page-item_.page-link]:border-gray-700 [&_.page-item_.page-link]:bg-white dark:[&_.page-item_.page-link]:bg-gray-800 [&_.page-item_.page-link]:text-gray-600 dark:[&_.page-item_.page-link]:text-gray-300 [&_.page-item_.page-link]:transition-all [&_.page-item_.page-link]:hover:bg-slate-100 dark:[&_.page-item_.page-link]:hover:bg-gray-700 [&_.page-item.active_.page-link]:bg-green-600 [&_.page-item.active_.page-link]:border-green-600 [&_.page-item.active_.page-link]:text-white [&_.page-item.disabled_.page-link]:opacity-40">
-                {{ $inspections->links() }}
-            </div>
-            @endif
+            <div id="inspection-pagination">@include('inspections.partials.pagination', ['inspections' => $inspections])</div>
         </div>
     </main>
 
@@ -849,6 +722,8 @@
                 'X-Requested-With': 'XMLHttpRequest'
             };
             if (body !== null) headers['Content-Type'] = 'application/json';
+            const socketId = window.Echo?.socketId();
+            if (socketId) headers['X-Socket-ID'] = socketId;
 
             const response = await fetch(url, {
                 method,
@@ -863,6 +738,7 @@
                 const message = data?.message || (data?.errors ? Object.values(data.errors)[0][0] : null) || 'Une erreur est survenue.';
                 throw new Error(message);
             }
+            if (method !== 'GET' && data?.success) await window.refreshDashboard?.();
             return data;
         }
 
@@ -906,16 +782,6 @@
             document.getElementById('filter-category').value   = '';
             document.getElementById('filter-status').value     = '';
             filterTable();
-        }
-
-        // Moves a row to the top of the table (used when an inspection starts)
-        function moveRowToTop(row) {
-            const tableBody = document.getElementById('inspections-table-body');
-            if (!tableBody || !row) return;
-            if (tableBody.firstElementChild === row) return;
-            tableBody.insertBefore(row, tableBody.firstElementChild);
-            row.classList.add('row-highlight');
-            setTimeout(() => row.classList.remove('row-highlight'), 1200);
         }
 
         // Active/désactive le mode maintenance pour les utilisateurs "écran"
@@ -985,30 +851,6 @@
             if (el) el.textContent = n;
         }
 
-        // Re-inserts the "Aucun véhicule trouvé" placeholder row whenever the
-        // table body no longer has any real data rows (e.g. after deleting
-        // the last visible vehicle).
-        function checkEmptyTable() {
-            const tableBody = document.getElementById('inspections-table-body');
-            if (!tableBody) return;
-            const hasRows = tableBody.querySelector('tr[id^="row-"]');
-            if (!hasRows && !document.getElementById('empty-state-row')) {
-                const colspan = document.querySelectorAll('thead th').length || 7;
-                const tr = document.createElement('tr');
-                tr.id = 'empty-state-row';
-                tr.innerHTML = `
-                    <td colspan="${colspan}" class="px-8 py-16 text-center">
-                        <div class="flex flex-col items-center gap-3">
-                            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-slate-600">
-                                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 2m0 0h10m-10 0h10m1-10v4l2 2m0 0h1m-1 0v2"/></svg>
-                            </div>
-                            <p class="text-sm font-medium text-slate-400 dark:text-slate-600">Aucun véhicule trouvé</p>
-                        </div>
-                    </td>`;
-                tableBody.appendChild(tr);
-            }
-        }
-
         function startSingleTimer(timer) {
             const id = timer.dataset.id;
             if (activeIntervals[id]) clearInterval(activeIntervals[id]);
@@ -1021,6 +863,7 @@
             const isActive   = timer.dataset.active === 'true';
 
             if (isNaN(startTime) || isNaN(duration) || !isActive) {
+                timer.dataset.expired = 'true';
                 timer.innerText = '00:00';
                 timer.classList.remove('text-amber-500');
                 timer.classList.add('text-gray-400', 'dark:text-gray-500');
@@ -1029,14 +872,16 @@
 
             const durationMs  = duration * 60 * 1000;
             const updateTimer = () => {
-                const remaining = durationMs - (Date.now() - startTime);
+                const remaining = durationMs - ((window.dashboardServerNow ? window.dashboardServerNow() : Date.now()) - startTime);
                 if (remaining <= 0) {
+                    timer.dataset.expired = 'true';
                     clearInterval(activeIntervals[id]);
                     timer.innerText = '00:00';
                     timer.classList.remove('text-amber-500');
                     timer.classList.add('text-gray-400');
                     return;
                 }
+                timer.dataset.expired = 'false';
                 const m = Math.floor(remaining / 60000);
                 const s = Math.floor((remaining % 60000) / 1000);
                 timer.innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
@@ -1055,13 +900,6 @@
 
         function showAlert(type, title, text) {
             Swal.fire({ icon: type, title, text, timer: type === 'success' ? 1500 : undefined, showConfirmButton: type === 'error' });
-        }
-
-        // ── Escape user-supplied text before injecting into innerHTML ───
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str ?? '';
-            return div.innerHTML;
         }
 
         // ── Edit Modal ─────────────────────────────────────────────
@@ -1123,63 +961,14 @@
                 if (data.success) {
                     showAlert('success', 'Modifié', 'Les informations ont été mises à jour avec succès.');
                     closeEditModal();
-                    const row = document.getElementById(`row-${id}`);
-                    if (row && data.inspection) updateRowData(row, data.inspection);
+
                 }
             })
             .catch(err => showAlert('error', 'Erreur', err.message))
             .finally(() => { if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Enregistrer'; } });
         }
 
-        function updateRowData(row, inspection) {
-            const sep  = inspection.plate_number.includes('|') ? '|' : '-';
-            const parts = inspection.plate_number.split(sep);
-            const formatted = parts.length === 3 ? `${parts[0]} · ${parts[1]} · ${parts[2]}` : inspection.plate_number;
 
-            const cells = row.getElementsByTagName('td');
-            // Indices : 0=checkbox, 1=plaque, 2=propriétaire, 3=cat, 4=statut, 5=temps, 6=technicien, 7=lane
-            if (cells.length >= 8) {
-                cells[1].innerText = formatted;
-                cells[2].innerText = inspection.owner_name || '---';
-
-                // Mise à jour des data attributes
-                row.dataset.plate    = inspection.plate_number.toLowerCase();
-                row.dataset.owner    = (inspection.owner_name || '').toLowerCase();
-                row.dataset.category = inspection.category;
-
-                // Mise à jour du badge catégorie
-                const badge = cells[3].querySelector('span');
-                if (badge) {
-                    badge.innerText   = inspection.category;
-                    badge.className   = `badge ${inspection.category === 'PL' ? 'text-orange-600 bg-orange-50 border border-orange-200 dark:text-orange-400 dark:bg-orange-950/30 dark:border-orange-900/50' : 'text-green-700 bg-green-50 border border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900/50'}`;
-                }
-
-                // Mise à jour du technicien et de la ligne
-                cells[6].textContent = inspection.technician_name || '—';
-                if (inspection.lane) {
-                    const laneColors = {
-                        'VL2': 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50',
-                        'VL4': 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50',
-                        'PL1': 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50'
-                    };
-                    cells[7].innerHTML = `<span class="badge ${laneColors[inspection.lane] || ''}">${inspection.lane}</span>`;
-                } else {
-                    cells[7].innerHTML = '<span class="text-sm text-slate-400 dark:text-slate-500">—</span>';
-                }
-            }
-
-            const editBtn = row.querySelector('.edit-btn');
-            if (editBtn) {
-                editBtn.dataset.plate    = inspection.plate_number;
-                editBtn.dataset.owner    = inspection.owner_name || '';
-                editBtn.dataset.category = inspection.category;
-            }
-            const timer = row.querySelector('.timer-display');
-            if (timer) {
-                timer.dataset.duration = inspection.category === 'VL' ? 20 : 30;
-                if (timer.dataset.active === 'true') startSingleTimer(timer);
-            }
-        }
 
         // ── Bulk Delete ─────────────────────────────────────────────────
         function toggleAllCheckboxes() {
@@ -1230,40 +1019,14 @@
 
         async function performBulkDelete(libreIds) {
             try {
-                const data = await apiFetch('/inspections/bulk-delete', {
-                    method: 'DELETE',
-                    body: { ids: libreIds }
-                });
-
-                if (data.success) {
-                    libreIds.forEach(id => {
-                        const row = document.getElementById(`row-${id}`);
-                        if (row) {
-                            gsap.to(row, {
-                                opacity: 0, x: 40, scaleY: 0.85,
-                                duration: 0.4, ease: 'power3.in',
-                                onComplete: () => {
-                                    row.remove();
-                                    checkEmptyTable();
-                                }
-                            });
-                        }
-                    });
-
-                    const selectAll = document.getElementById('select-all');
-                    if (selectAll) selectAll.checked = false;
-                    updateBulkDeleteBtn();
-                    syncSelectAllState();
-                    setTotalCount(data.totalCount);
-
-                    Swal.fire('Terminé', data.message || `${libreIds.length} véhicule(s) supprimé(s)`, 'success');
-                }
+                const data = await apiFetch('/inspections/bulk-delete', { method: 'DELETE', body: { ids: libreIds } });
+                Swal.fire('Terminé', data.message, 'success');
             } catch (error) {
-                Swal.fire('Erreur', error.message || "Une erreur est survenue lors de la suppression.", 'error');
+                Swal.fire('Erreur', error.message, 'error');
             }
         }
 
-        async function bulkDelete() {
+                async function bulkDelete() {
             const checked = document.querySelectorAll('.row-checkbox:checked');
             const ids = Array.from(checked).map(cb => parseInt(cb.dataset.id));
 
@@ -1354,6 +1117,7 @@
             apiFetch('/technicians/active')
                 .then(data => {
                     const select = document.getElementById('start_technician');
+                    const previous = select.value;
                     select.innerHTML = '<option value="">Sélectionner un technicien...</option>';
                     if (data.success && data.technicians) {
                         data.technicians.forEach(tech => {
@@ -1362,6 +1126,7 @@
                             opt.textContent = `${tech.name} (${tech.identifier})`;
                             select.appendChild(opt);
                         });
+                        if (Array.from(select.options).some(option => option.value === previous)) select.value = previous;
                     }
                 })
                 .catch(() => {});
@@ -1392,63 +1157,20 @@
 
         async function submitStartForm(event) {
             event.preventDefault();
-
             const id = document.getElementById('start_inspection_id').value;
-            const technicianIdentifier = document.getElementById('start_technician').value;
-            const technicianPassword = document.getElementById('start_password').value;
-            const lane = document.getElementById('start_lane').value;
-
-            if (!technicianIdentifier || !technicianPassword || !lane) {
-                Swal.fire('Attention', 'Veuillez remplir tous les champs.', 'warning');
-                return;
-            }
-
-            const submitBtn = document.getElementById('start-submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'Vérification…';
-
+            const button = document.getElementById('start-submit-btn');
+            button.disabled = true;
             try {
-                const data = await apiFetch(`/inspections/${id}/status`, {
-                    method: 'PATCH',
-                    body: {
-                        status: 'en_cours',
-                        technician_identifier: technicianIdentifier,
-                        technician_password: technicianPassword,
-                        lane: lane
-                    }
-                });
-
-                if (data.success) {
-                    closeStartModal();
-                    Swal.fire('Succès', 'Le contrôle a démarré avec succès.', 'success');
-
-                    const row = document.getElementById(`row-${id}`);
-                    if (row && data.inspection) {
-                        updateRowData(row, data.inspection);
-                        moveRowToTop(row);
-                        const btn = row.querySelector('.action-btn');
-                        if (btn) {
-                            btn.textContent = 'Valider';
-                            btn.dataset.status = 'en_cours';
-                            btn.className = 'action-btn bg-green-600 hover:bg-green-700 text-white shadow-sm shadow-green-600/30 hover:scale-105 active:scale-95 shine-effect';
-                        }
-                        row.dataset.filterStatus = 'en_cours';
-                        // Mise à jour du badge de statut
-                        const statusCell = row.querySelector('.status-text');
-                        if (statusCell) {
-                            statusCell.innerHTML = '<span class="badge bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/60 status-en-cours">En cours</span>';
-                        }
-                        // Affichage du bouton de retour
-                        const revertBtn = document.getElementById(`btn-revert-${id}`);
-                        if (revertBtn) revertBtn.style.display = 'inline-flex';
-                    }
-                }
-            } catch (error) {
-                Swal.fire('Erreur', error.message || 'Identifiants du technicien incorrects.', 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'Démarrer';
-            }
+                await apiFetch(`/inspections/${id}/status`, { method: 'PATCH', body: {
+                    status: 'en_cours',
+                    technician_identifier: document.getElementById('start_technician').value,
+                    technician_password: document.getElementById('start_password').value,
+                    lane: document.getElementById('start_lane').value,
+                }});
+                closeStartModal();
+                showAlert('success', 'Succès', 'Le contrôle a démarré.');
+            } catch (error) { showAlert('error', 'Erreur', error.message); }
+            finally { button.disabled = false; }
         }
 
         // ── Status update ──────────────────────────────────────────
@@ -1487,166 +1209,33 @@
         }
 
         function updateStatus(id, currentStatus, result = null) {
-            const nextStatus = currentStatus === 'libre' ? 'en_cours' : (currentStatus === 'en_cours' ? 'valider' : 'imprimer');
-            const payload    = { status: nextStatus };
-            if (result) payload.result = result;
-
-            apiFetch(`/inspections/${id}/status`, { method: 'PATCH', body: payload })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || 'La mise à jour a échoué.');
-
-                const row       = document.getElementById(`row-${id}`);
-                const btn       = row?.querySelector('.action-btn');
-                const revertBtn = document.getElementById(`btn-revert-${id}`);
-
-                if (row) {
-                    const fs = nextStatus === 'valider' ? (result || 'valider') : nextStatus;
-                    row.dataset.filterStatus = fs;
-                }
-
-                if (btn) {
-                    const newLabel = nextStatus === 'libre' ? 'Démarrer' : (nextStatus === 'en_cours' ? 'Valider' : 'Imprimer');
-                    btn.textContent  = newLabel;
-                    btn.dataset.status = nextStatus;
-                    btn.className    = 'action-btn hover:scale-105 active:scale-95 transition-all duration-200 shine-effect ';
-                    if      (nextStatus === 'libre')    btn.classList.add('bg-slate-800','hover:bg-slate-700','dark:bg-white/15','dark:hover:bg-white/25','text-white');
-                    else if (nextStatus === 'en_cours') btn.classList.add('bg-green-600','hover:bg-green-700','text-white','shadow-sm','shadow-green-600/30');
-                    else if (nextStatus === 'valider')  btn.classList.add('bg-slate-900','dark:bg-slate-800','text-green-400','border','border-green-500/40','hover:border-green-400','hover:text-green-300');
-                    else if (nextStatus === 'imprimer') btn.classList.add('bg-blue-700','hover:bg-blue-800','text-white','shadow-sm','shadow-blue-600/30');
-                }
-
-                const statusCell = row?.querySelector('.status-text');
-                if (statusCell) {
-                    if      (nextStatus === 'en_cours')                    statusCell.innerHTML = '<span class="badge bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/60 status-en-cours">En cours</span>';
-                    else if (nextStatus === 'valider' && result === 'favorable')    statusCell.innerHTML = '<span class="badge bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">Favorable</span>';
-                    else if (nextStatus === 'valider' && result === 'defavorable')  statusCell.innerHTML = '<span class="badge bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/60">Défavorable</span>';
-                }
-
-                if (revertBtn) revertBtn.style.display = nextStatus === 'libre' ? 'none' : 'inline-flex';
-
-                const timer = row?.querySelector('.timer-display');
-                if (timer) {
-                    if (nextStatus === 'en_cours') {
-                        timer.dataset.start  = data.inspection?.started_at || new Date().toISOString();
-                        timer.dataset.active = 'true';
-                        startSingleTimer(timer);
-                    } else {
-                        timer.dataset.active = 'false';
-                        if (activeIntervals[id]) clearInterval(activeIntervals[id]);
-                        timer.innerText = '00:00';
-                        timer.classList.remove('text-amber-500');
-                        timer.classList.add('text-gray-400');
-                    }
-                }
-
-                if (nextStatus === 'imprimer' && row) {
-                    row.style.transition = 'all 0.5s ease';
-                    row.style.opacity    = '0';
-                    row.style.transform  = 'translateX(30px)';
-                    setTimeout(() => { row.remove(); checkEmptyTable(); }, 500);
-                }
-
-                setTotalCount(data.totalCount);
-                showAlert('success', 'Mis à jour', "Le statut de l'inspection a été mis à jour avec succès.");
-            })
-            .catch(err => { console.error(err); showAlert('error', 'Erreur', 'Une erreur est survenue lors de la mise à jour du statut.'); });
+            const status = currentStatus === 'libre' ? 'en_cours' : (currentStatus === 'en_cours' ? 'valider' : 'imprimer');
+            apiFetch(`/inspections/${id}/status`, { method: 'PATCH', body: { status, result } })
+                .then(() => showAlert('success', 'Mis à jour', 'Le statut a été mis à jour.'))
+                .catch(error => showAlert('error', 'Erreur', error.message));
         }
 
         // ── Corbeille ─────────────────────────────────────────────
         function confirmTrash(id) {
-            Swal.fire({
-                title: 'Êtes-vous sûr ?',
-                text: 'Ce véhicule sera déplacé vers la corbeille',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626',
-                confirmButtonText: 'Oui, supprimer',
-                cancelButtonText: 'Annuler'
-            }).then(result => {
-                if (result.isConfirmed) {
-                    apiFetch(`/inspections/${id}`, { method: 'DELETE' })
-                    .then(data => {
-                        if (data.success) {
-                            const row = document.getElementById(`row-${id}`);
-                            if (row) {
-                                gsap.to(row, {
-                                    opacity: 0, x: 40, scaleY: 0.85, duration: 0.4, ease: 'power3.in',
-                                    onComplete: () => { row.remove(); checkEmptyTable(); }
-                                });
-                            }
-                            setTotalCount(data.totalCount);
-                            showAlert('success', 'Succès', data.message);
-                        }
-                    })
-                    .catch(err => showAlert('error', 'Erreur', err.message));
-                }
+            Swal.fire({ title: 'Déplacer vers la corbeille ?', icon: 'warning', showCancelButton: true,
+                confirmButtonText: 'Oui, supprimer', cancelButtonText: 'Annuler' }).then(async result => {
+                if (!result.isConfirmed) return;
+                try {
+                    const data = await apiFetch(`/inspections/${id}`, { method: 'DELETE' });
+                    showAlert('success', 'Succès', data.message);
+                } catch (error) { showAlert('error', 'Erreur', error.message); }
             });
         }
 
         // ── Retour à l'état précédent ────────────────────────────────
         function confirmRevert(id) {
-            Swal.fire({
-                title: "Annuler la dernière étape ?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Oui',
-                cancelButtonText: 'Non'
-            }).then(result => {
-                if (result.isConfirmed) {
-                    apiFetch(`/inspections/${id}/revert`, { method: 'POST' })
-                    .then(data => {
-                        if (data.success) {
-                            const row        = document.getElementById(`row-${id}`);
-                            const actionBtn  = row?.querySelector('.action-btn');
-                            const revertBtn  = document.getElementById(`btn-revert-${id}`);
-                            const statusCell = row?.querySelector('.status-text');
-                            const newStatus  = data.inspection?.status ?? 'libre';
-
-                            if (row) row.dataset.filterStatus = newStatus;
-
-                            if (actionBtn) {
-                                actionBtn.className = 'action-btn hover:scale-105 active:scale-95 transition-all duration-200 shine-effect ';
-                                if (newStatus === 'libre') {
-                                    actionBtn.textContent = 'Démarrer';
-                                    actionBtn.classList.add('bg-slate-800','hover:bg-slate-700','dark:bg-white/15','text-white');
-                                    statusCell && (statusCell.innerHTML = '<span class="badge bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/15">Libre</span>');
-                                } else if (newStatus === 'en_cours') {
-                                    actionBtn.textContent = 'Valider';
-                                    actionBtn.classList.add('bg-green-600','hover:bg-green-700','text-white');
-                                    statusCell && (statusCell.innerHTML = '<span class="badge bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/60 status-en-cours">En cours</span>');
-                                } else if (newStatus === 'valider') {
-                                    actionBtn.textContent = 'Imprimer';
-                                    actionBtn.classList.add('bg-slate-900','dark:bg-slate-800','text-green-400','border','border-green-500/40','hover:border-green-400','hover:text-green-300');
-                                } else if (newStatus === 'imprimer') {
-                                    actionBtn.textContent = 'Imprimer';
-                                    actionBtn.classList.add('bg-blue-700','hover:bg-blue-800','text-white','shadow-sm','shadow-blue-600/30');
-                                }
-                                actionBtn.dataset.status = newStatus;
-                            }
-
-                            if (revertBtn) revertBtn.style.display = newStatus === 'libre' ? 'none' : 'inline-flex';
-
-                            const timer = row?.querySelector('.timer-display');
-                            if (timer) {
-                                if (newStatus === 'en_cours') {
-                                    timer.dataset.start  = data.inspection?.started_at || new Date().toISOString();
-                                    timer.dataset.active = 'true';
-                                    startSingleTimer(timer);
-                                } else {
-                                    timer.dataset.active = 'false';
-                                    if (activeIntervals[id]) clearInterval(activeIntervals[id]);
-                                    timer.innerText = '00:00';
-                                    timer.classList.remove('text-amber-500');
-                                    timer.classList.add('text-gray-500');
-                                }
-                            }
-
-                            setTotalCount(data.totalCount);
-                            Swal.fire({ icon: 'success', title: 'Succès', timer: 1000, showConfirmButton: false });
-                        }
-                    })
-                    .catch(err => showAlert('error', 'Erreur', err.message));
-                }
+            Swal.fire({ title: 'Annuler la dernière étape ?', icon: 'question', showCancelButton: true,
+                confirmButtonText: 'Oui', cancelButtonText: 'Non' }).then(async result => {
+                if (!result.isConfirmed) return;
+                try {
+                    await apiFetch(`/inspections/${id}/revert`, { method: 'POST' });
+                    showAlert('success', 'Succès', "L'étape précédente a été rétablie.");
+                } catch (error) { showAlert('error', 'Erreur', error.message); }
             });
         }
 
@@ -1668,8 +1257,7 @@
                     if (data.success) {
                         form.reset();
                         window.dispatchEvent(new CustomEvent('close-inspection-modal'));
-                        appendInspectionToTable(data.inspection);
-                        setTotalCount(data.totalCount);
+
                         Swal.fire({ icon: 'success', title: 'Succès', text: data.message || 'Le véhicule a été ajouté avec succès.', timer: 1500, showConfirmButton: false });
                     }
                 })
@@ -1678,231 +1266,44 @@
             });
         });
 
-        // ── Append new row ─────────────────────────────────────────
-        function appendInspectionToTable(inspection) {
-            const tableBody = document.getElementById('inspections-table-body');
-            if (!tableBody) return;
-            if (document.getElementById(`row-${inspection.id}`)) return;
-            const empty = document.getElementById('empty-state-row');
-            if (empty) empty.remove();
 
-            const rawPlate = inspection.plate_number;
-            const sep      = rawPlate.includes('|') ? '|' : (rawPlate.includes('-') ? '-' : null);
-            let formatted  = rawPlate;
-            if (sep) {
-                const parts = rawPlate.split(sep).map(p => p.trim());
-                if (parts.length === 3) formatted = `${parts[0]} · ${parts[1]} · ${parts[2]}`;
+
+        window.renderDashboardSnapshot = function (data) {
+            const body = document.getElementById('inspections-table-body');
+            const selected = new Set(Array.from(body.querySelectorAll('.row-checkbox:checked'), cb => cb.dataset.id));
+            Object.keys(activeIntervals).forEach(id => { clearInterval(activeIntervals[id]); delete activeIntervals[id]; });
+            if (window.dashboardRowsHtml !== data.html) { body.innerHTML = data.html; window.dashboardRowsHtml = data.html; }
+            body.querySelectorAll('.row-checkbox').forEach(cb => { cb.checked = selected.has(cb.dataset.id) && cb.dataset.status === 'libre'; });
+            document.getElementById('inspection-pagination').innerHTML = data.paginationHtml;
+            setTotalCount(data.totalCount);
+            initTimers();
+            filterTable();
+            const overlay = document.getElementById('maintenance-overlay');
+            if (overlay) {
+                document.getElementById('maintenance-message').textContent = data.maintenance.message || 'Le système est temporairement indisponible. Veuillez patienter.';
+                overlay.classList.toggle('hidden', !data.maintenance.enabled);
+                overlay.classList.toggle('flex', data.maintenance.enabled);
             }
-
-            const catClass = inspection.category === 'PL'
-                ? 'text-orange-600 bg-orange-50 border border-orange-200 dark:text-orange-400 dark:bg-orange-950/30 dark:border-orange-900/50'
-                : 'text-green-700 bg-green-50 border border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900/50';
-
-            const laneColors = {
-                'VL2': 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50',
-                'VL4': 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50',
-                'PL1': 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50'
-            };
-
-            const newRow = document.createElement('tr');
-            newRow.id        = `row-${inspection.id}`;
-            newRow.className = 'group transition-all duration-200';
-            newRow.dataset.plate        = rawPlate.toLowerCase();
-            newRow.dataset.owner        = (inspection.owner_name || '').toLowerCase();
-            newRow.dataset.category     = inspection.category;
-            newRow.dataset.filterStatus = 'libre';
-
-            const safeFormatted = escapeHtml(formatted);
-            const safeOwner     = escapeHtml(inspection.owner_name || '---');
-            const safePlate     = escapeHtml(inspection.plate_number);
-
-            newRow.innerHTML = `
-                @if(auth()->user()->role === 'admin')
-                <td class="text-center">
-                    <input type="checkbox" class="row-checkbox vt-checkbox" data-id="${inspection.id}" data-status="libre">
-                </td>
-                @endif
-                <td class="font-plate font-bold text-green-600 dark:text-green-400 tracking-wider text-lg" dir="ltr">${safeFormatted}</td>
-                <td class="font-semibold text-slate-700 dark:text-slate-200 text-base truncate max-w-[150px]">${safeOwner}</td>
-                <td class="text-center">
-                    <span class="badge ${catClass}">${inspection.category === 'PL' ? '🚛' : '🚗'} ${inspection.category}</span>
-                </td>
-                <td class="text-center status-text" id="status-${inspection.id}">
-                    <span class="badge bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/15">Libre</span>
-                </td>
-                <td class="text-center">
-                    <div class="timer-display font-plate text-lg font-bold text-slate-400 dark:text-slate-500 tabular-nums"
-                         id="timer-${inspection.id}"
-                         data-id="${inspection.id}"
-                         data-start="invalid"
-                         data-duration="${inspection.category === 'VL' ? 20 : 30}"
-                         data-active="false">00:00</div>
-                </td>
-                <td class="text-center text-sm font-medium text-slate-600 dark:text-slate-300">—</td>
-                <td class="text-center"><span class="text-sm text-slate-400 dark:text-slate-500">—</span></td>
-                @if(auth()->user()->role === 'admin')
-                <td class="text-center">
-                    <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                        <button type="button" onclick="confirmRevert(${inspection.id})" id="btn-revert-${inspection.id}" style="display:none;"
-                                class="icon-btn border border-slate-200 dark:border-white/15 bg-white dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-200 dark:hover:border-amber-800/50 shine-effect"
-                                title="Retour à l'état précédent">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-                        </button>
-                        <button type="button" onclick="openEditModal(${inspection.id})"
-                                data-id="${inspection.id}"
-                                data-plate="${safePlate}"
-                                data-owner="${safeOwner}"
-                                data-category="${inspection.category}"
-                                class="edit-btn icon-btn border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 hover:border-amber-300 dark:hover:border-amber-800/70 shine-effect"
-                                title="Modifier">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        </button>
-                        <button type="button" onclick="handleStatusUpdate(${inspection.id}, this.dataset.status)" data-status="libre"
-                                class="action-btn bg-slate-800 hover:bg-slate-700 dark:bg-white/15 dark:hover:bg-white/25 text-white hover:scale-105 active:scale-95 shine-effect">
-                            Démarrer
-                        </button>
-                        <button type="button" onclick="confirmTrash(${inspection.id})" title="Supprimer"
-                                class="icon-btn border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-300 dark:hover:border-red-800/60 shine-effect">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        </button>
-                    </div>
-                </td>
-                @endif
-            `;
-
-            tableBody.insertBefore(newRow, tableBody.firstChild);
-            initTimers();
-        }
-
-        // ── Reverb real-time sync ──────────────────────────────────
-        document.addEventListener('DOMContentLoaded', function () {
-            initTimers();
-
-            if (typeof Echo === 'undefined') return;
-
-            // Écran de maintenance en temps réel (n'affecte pas l'admin)
-            const isAdmin = {{ auth()->user()->role === 'admin' ? 'true' : 'false' }};
-            Echo.private('maintenance-channel')
-                .listen('.maintenance.changed', (data) => {
-                    if (isAdmin) return; // l'admin n'est jamais bloqué par la maintenance
-                    const overlay = document.getElementById('maintenance-overlay');
-                    if (!overlay) return;
-                    const msgEl = document.getElementById('maintenance-message');
-                    if (msgEl && data.message) msgEl.textContent = data.message;
-                    overlay.classList.toggle('hidden', !data.enabled);
-                    overlay.classList.toggle('flex', data.enabled);
-                });
-
-            Echo.private('inspections-channel')
-                .listen('.inspection.changed', (data) => {
-                    const inspection = data.inspection;
-                    const actionType = data.actionType;
-                    const row        = document.getElementById(`row-${inspection.id}`);
-
-                    if (actionType === 'delete' && row) {
-                        gsap.to(row, {
-                            opacity: 0, x: 30, duration: 0.35, ease: 'power2.in',
-                            onComplete: () => {
-                                row.remove();
-                                checkEmptyTable();
-                                setTotalCount(data.totalCount);
-                                updateBulkDeleteBtn();
-                                syncSelectAllState();
-                            }
-                        });
-                        return;
-                    }
-
-                    if ((actionType === 'update' || actionType === 'revert') && row) {
-                        const fs = inspection.status === 'valider' ? (inspection.result || 'valider') : inspection.status;
-                        row.dataset.filterStatus = fs;
-
-                        if (inspection.status === 'en_cours') {
-                            moveRowToTop(row);
-                        }
-
-                        const statusCell = row.querySelector('.status-text');
-                        if (statusCell) {
-                            if      (inspection.status === 'en_cours')                               statusCell.innerHTML = '<span class="badge bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/60 status-en-cours">En cours</span>';
-                            else if (inspection.status === 'valider' && inspection.result === 'favorable')   statusCell.innerHTML = '<span class="badge bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">Favorable</span>';
-                            else if (inspection.status === 'valider' && inspection.result === 'defavorable') statusCell.innerHTML = '<span class="badge bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/60">Défavorable</span>';
-                            else if (inspection.status === 'libre')                                  statusCell.innerHTML = '<span class="badge bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/15">Libre</span>';
-                        }
-
-                        const btn = row.querySelector('.action-btn');
-                        if (btn) {
-                            const newLabel = inspection.status === 'libre' ? 'Démarrer' : (inspection.status === 'en_cours' ? 'Valider' : 'Imprimer');
-                            btn.textContent    = newLabel;
-                            btn.dataset.status = inspection.status;
-                            btn.className = 'action-btn hover:scale-105 active:scale-95 transition-all duration-200 shine-effect ';
-                            if      (inspection.status === 'libre')    btn.classList.add('bg-slate-800','hover:bg-slate-700','dark:bg-white/15','text-white');
-                            else if (inspection.status === 'en_cours') btn.classList.add('bg-green-600','hover:bg-green-700','text-white');
-                            else if (inspection.status === 'valider')  btn.classList.add('bg-slate-900','dark:bg-slate-800','text-green-400','border','border-green-500/40');
-                            else if (inspection.status === 'imprimer') btn.classList.add('bg-blue-700','hover:bg-blue-800','text-white','shadow-sm','shadow-blue-600/30');
-                        }
-
-                        const revertBtn = document.getElementById(`btn-revert-${inspection.id}`);
-                        if (revertBtn) revertBtn.style.display = inspection.status === 'libre' ? 'none' : 'inline-flex';
-
-                        const timer = row.querySelector('.timer-display');
-                        if (timer) {
-                            if (inspection.status === 'en_cours' && inspection.started_at) {
-                                timer.dataset.start  = inspection.started_at;
-                                timer.dataset.active = 'true';
-                                startSingleTimer(timer);
-                            } else {
-                                timer.dataset.active = 'false';
-                                if (activeIntervals[inspection.id]) clearInterval(activeIntervals[inspection.id]);
-                                timer.innerText = '00:00';
-                                timer.classList.remove('text-amber-500');
-                                timer.classList.add('text-gray-400');
-                            }
-                        }
-
-                        // Mise à jour de la colonne technicien et voie
-                        const cells = row.getElementsByTagName('td');
-                        if (cells.length >= 8) {
-                            cells[6].textContent = inspection.technician_name || '—';
-                            if (inspection.lane) {
-                                const laneColors = {
-                                    'VL2': 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50',
-                                    'VL4': 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50',
-                                    'PL1': 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50'
-                                };
-                                cells[7].innerHTML = `<span class="badge ${laneColors[inspection.lane] || ''}">${inspection.lane}</span>`;
-                            } else {
-                                cells[7].innerHTML = '<span class="text-sm text-slate-400 dark:text-slate-500">—</span>';
-                            }
-                        }
-
-                        if (inspection.status === 'imprimer') {
-                            row.style.transition = 'all 0.5s ease';
-                            row.style.opacity    = '0';
-                            row.style.transform  = 'translateX(30px)';
-                            setTimeout(() => {
-                                row.remove();
-                                checkEmptyTable();
-                                updateBulkDeleteBtn();
-                                syncSelectAllState();
-                            }, 500);
-                        }
-
-                        setTotalCount(data.totalCount);
-                    } else if (actionType === 'create') {
-                        if (typeof appendInspectionToTable === 'function') {
-                            appendInspectionToTable(inspection);
-                            setTotalCount(data.totalCount);
-                        }
-                    } else if (actionType === 'bulk_delete') {
-                        // Chaque véhicule est déjà retiré via son propre événement 'delete';
-                        // on force une resynchronisation finale du compteur et des cases à cocher.
-                        setTotalCount(data.totalCount);
-                        checkEmptyTable();
-                        updateBulkDeleteBtn();
-                        syncSelectAllState();
-                    }
-                });
-        });
+            const maintenanceButton = document.getElementById('maintenance-toggle-btn');
+            if (maintenanceButton) {
+                maintenanceButton.dataset.enabled = data.maintenance.enabled ? '1' : '0';
+                document.getElementById('maintenance-toggle-label').textContent = data.maintenance.enabled ? 'Maintenance : ON' : 'Maintenance : OFF';
+            }
+            const select = document.getElementById('start_technician');
+            if (select) {
+                const previous = select.value;
+                select.replaceChildren(new Option('Sélectionner un technicien...', ''));
+                (data.technicians || []).forEach(tech => select.add(new Option(`${tech.name} (${tech.identifier})`, tech.identifier)));
+                if (Array.from(select.options).some(option => option.value === previous)) select.value = previous;
+            }
+            Object.entries({total:'daily-total',en_cours:'daily-en-cours',favorable:'daily-favorable',defavorable:'daily-defavorable'}).forEach(([key,id]) => {
+                const element = document.getElementById(id);
+                if (element) { element.textContent = data.dailyStats[key]; element.style.opacity = '1'; }
+                const bar = document.getElementById(`bar-${key.replace('_','-')}`);
+                if (bar) bar.style.width = `${data.dailyStats.total ? Math.round(data.dailyStats[key] / data.dailyStats.total * 100) : 0}%`;
+            });
+        };
+        document.addEventListener('DOMContentLoaded', initTimers);
 
         // ── Fetch daily stats ─────────────────────────────────────────
         window.fetchDailyStats = async function () {
@@ -1941,5 +1342,6 @@
         };
     </script>
 
+<x-branding-modal />
 </body>
 </html>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DashboardChanged;
 use App\Models\Technician;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,7 @@ class TechnicianController extends Controller
     public function index()
     {
         $technicians = Technician::all();
+
         return response()->json(['success' => true, 'technicians' => $technicians]);
     }
 
@@ -36,10 +38,12 @@ class TechnicianController extends Controller
             'is_active' => true,
         ]);
 
+        broadcast(new DashboardChanged)->toOthers();
+
         return response()->json([
             'success' => true,
             'message' => 'تم إضافة التقني بنجاح',
-            'technician' => $technician
+            'technician' => $technician,
         ]);
     }
 
@@ -49,6 +53,7 @@ class TechnicianController extends Controller
     public function show($id)
     {
         $technician = Technician::findOrFail($id);
+
         return response()->json(['success' => true, 'technician' => $technician]);
     }
 
@@ -61,7 +66,7 @@ class TechnicianController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'identifier' => 'sometimes|string|unique:technicians,identifier,' . $id . '|max:50',
+            'identifier' => 'sometimes|string|unique:technicians,identifier,'.$id.'|max:50',
             'password' => 'sometimes|string|min:4',
             'is_active' => 'sometimes|boolean',
         ]);
@@ -72,10 +77,12 @@ class TechnicianController extends Controller
 
         $technician->update($validated);
 
+        broadcast(new DashboardChanged)->toOthers();
+
         return response()->json([
             'success' => true,
             'message' => 'تم تحديث بيانات التقني بنجاح',
-            'technician' => $technician
+            'technician' => $technician,
         ]);
     }
 
@@ -87,9 +94,11 @@ class TechnicianController extends Controller
         $technician = Technician::findOrFail($id);
         $technician->delete();
 
+        broadcast(new DashboardChanged)->toOthers();
+
         return response()->json([
             'success' => true,
-            'message' => 'تم حذف التقني بنجاح'
+            'message' => 'تم حذف التقني بنجاح',
         ]);
     }
 
@@ -99,13 +108,15 @@ class TechnicianController extends Controller
     public function toggleActive($id)
     {
         $technician = Technician::findOrFail($id);
-        $technician->is_active = !$technician->is_active;
+        $technician->is_active = ! $technician->is_active;
         $technician->save();
+
+        broadcast(new DashboardChanged)->toOthers();
 
         return response()->json([
             'success' => true,
             'message' => $technician->is_active ? 'تم تفعيل التقني' : 'تم تعطيل التقني',
-            'is_active' => $technician->is_active
+            'is_active' => $technician->is_active,
         ]);
     }
 
@@ -120,10 +131,10 @@ class TechnicianController extends Controller
         ]);
 
         $technician = Technician::where('identifier', $validated['identifier'])
-                                ->where('is_active', true)
-                                ->first();
+            ->where('is_active', true)
+            ->first();
 
-        if (!$technician || !Hash::check($validated['password'], $technician->password)) {
+        if (! $technician || ! Hash::check($validated['password'], $technician->password)) {
             throw ValidationException::withMessages([
                 'identifier' => 'الكود أو كلمة المرور غير صحيحة',
             ]);
@@ -135,7 +146,7 @@ class TechnicianController extends Controller
                 'id' => $technician->id,
                 'name' => $technician->name,
                 'identifier' => $technician->identifier,
-            ]
+            ],
         ]);
     }
 
@@ -145,12 +156,12 @@ class TechnicianController extends Controller
     public function getActiveTechnicians()
     {
         $technicians = Technician::where('is_active', true)
-                                 ->select('id', 'name', 'identifier')
-                                 ->get();
+            ->select('id', 'name', 'identifier')
+            ->get();
 
         return response()->json([
             'success' => true,
-            'technicians' => $technicians
+            'technicians' => $technicians,
         ]);
     }
 }

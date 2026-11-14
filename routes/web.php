@@ -1,13 +1,16 @@
 <?php
 
+use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\InspectionController;
-use App\Http\Controllers\TechnicianController;
 use App\Http\Controllers\MaintenanceController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TechnicianController;
 use App\Http\Middleware\CheckTechnicianRole;
+use Illuminate\Support\Facades\Route;
 
 // Redirection par défaut
-Route::get('/', fn() => redirect()->route('inspections.index'));
+Route::get('/', fn () => redirect()->route('inspections.index'));
+Route::get('/branding/logo', [BrandingController::class, 'logo'])->name('branding.logo');
 
 // Routes protégées
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -15,25 +18,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Affichage du tableau de bord principal
     Route::get('/dashboard', [InspectionController::class, 'index'])
         ->name('inspections.index');
+    Route::get('/inspections/snapshot', [InspectionController::class, 'snapshot'])->name('inspections.snapshot');
 
-    Route::get('/home', fn() => redirect()->route('inspections.index'))
+    Route::get('/home', fn () => redirect()->route('inspections.index'))
         ->name('dashboard');
 
     // Protection des routes Admin
     Route::middleware([CheckTechnicianRole::class])->group(function () {
+        Route::get('/settings/branding', [BrandingController::class, 'edit'])->name('branding.edit');
+        Route::put('/settings/branding', [BrandingController::class, 'update'])->name('branding.update');
         Route::post('/inspections', [InspectionController::class, 'store'])->name('inspections.store');
-        
+
         // Mises à jour
         Route::patch('/inspections/{inspection}', [InspectionController::class, 'update'])->whereNumber('inspection')->name('inspections.update');
         Route::patch('/inspections/{inspection}/status', [InspectionController::class, 'updateStatus'])->whereNumber('inspection')->name('inspections.updateStatus');
         Route::post('/inspections/{inspection}/revert', [InspectionController::class, 'revertStatus'])->whereNumber('inspection')->name('inspections.revert');
-        
+
         Route::get('/inspections/archive', [InspectionController::class, 'archive'])->name('inspections.archive');
 
         // Statistiques du jour (AJAX)
         Route::get('/inspections/daily-stats', [InspectionController::class, 'dailyStats'])
             ->name('inspections.daily-stats');
-        
+
         // Routes de la corbeille
         Route::get('/inspections/trash', [InspectionController::class, 'trash'])->name('inspections.trash');
         Route::post('/inspections/{id}/restore', [InspectionController::class, 'restore'])->name('inspections.restore');
@@ -67,4 +73,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/technicians/verify', [TechnicianController::class, 'verify'])->name('technicians.verify');
 });
 
-require __DIR__.'/auth.php';
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});

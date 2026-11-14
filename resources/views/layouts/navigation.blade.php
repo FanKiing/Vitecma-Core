@@ -18,6 +18,9 @@
                 </div>
             </div>
 
+            @if (auth()->user()->role === 'admin')
+                <button type="button" @click="$dispatch('open-branding')" class="px-3 py-2 text-sm text-green-800 hover:underline">Nom et logo</button>
+            @endif
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">

@@ -13,16 +13,12 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitecma - Corbeille</title>
+    <title>{{ $siteName }} - Corbeille</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 
-    @vite(['resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/uplogo.png') }}">
+    <link rel="shortcut icon" href="{{ $siteIconUrl }}">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap');
@@ -137,8 +133,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
-
-    <script>tailwind.config = { darkMode: 'class' };</script>
 </head>
 <body class="bg-slate-50 dark:bg-[#0a0f1a] text-slate-800 dark:text-slate-200 min-h-screen flex flex-col transition-colors duration-300">
 
@@ -151,25 +145,28 @@
                 </svg>
             </div>
             <div class="flex flex-col leading-tight">
-                <span class="text-lg font-extrabold tracking-tight text-slate-800 dark:text-white">VITECMA</span>
+                <span class="text-lg font-extrabold tracking-tight text-slate-800 dark:text-white" data-brand-name>{{ $siteName }}</span>
                 <span class="text-[0.6rem] font-medium text-slate-400 dark:text-slate-500 tracking-widest uppercase">Corbeille — {{ \Carbon\Carbon::now()->locale('fr')->isoFormat('D MMMM YYYY') }}</span>
             </div>
         </div>
 
         <div class="flex items-center flex-wrap gap-2">
+            <span id="realtime-status" role="status" class="text-xs text-slate-500" data-state="connecting">Synchronisation…</span>
+            @if (auth()->user()->role === 'admin')
+                <button type="button" @click="$dispatch('open-branding')" class="px-4 py-2 rounded-lg bg-green-600/10 text-green-700 dark:text-green-400 border border-green-600/20 text-sm font-semibold hover:bg-green-600/20">Nom et logo</button>
+            @endif
             <a href="{{ route('dashboard') }}"
                class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-lg transition-all font-semibold text-sm border border-slate-200/80 dark:border-white/10 shine-effect">
                 <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 <span>Tableau de bord</span>
             </a>
 
-            @if($inspections->count() > 0)
-            <button onclick="emptyTrash('{{ route('inspections.emptyTrash') }}')"
+            <button id="empty-trash-btn" style="{{ $inspections->total() ? '' : 'display:none' }}" onclick="emptyTrash('{{ route('inspections.emptyTrash') }}')"
                     class="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-lg shadow-md shadow-red-600/25 transition-all font-bold text-sm shine-effect hover:scale-[1.02] active:scale-95">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 <span>Vider la corbeille</span>
             </button>
-            @endif
+
 
             <div class="h-6 w-px bg-slate-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
 
@@ -242,61 +239,14 @@
                             <th class="w-[32%] text-center">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="trash-table-body">
-                        @forelse($inspections as $inspection)
-                        <tr class="trash-row transition-all duration-150 hover:shadow-sm"
-                            id="row-{{ $inspection->id }}"
-                            data-id="{{ $inspection->id }}"
-                            data-plate="{{ strtolower($inspection->plate_number) }}"
-                            data-owner="{{ strtolower($inspection->owner_name ?? '') }}"
-                            data-category="{{ $inspection->category }}">
-                            <td class="font-plate font-bold text-slate-700 dark:text-slate-200 tracking-wider text-lg" dir="ltr">
-                                {{ str_replace('|', ' · ', $inspection->plate_number) }}
-                            </td>
-                            <td class="font-semibold text-slate-600 dark:text-slate-300 text-base">
-                                {{ $inspection->owner_name ?? '---' }}
-                            </td>
-                            <td class="text-center">
-                                <span class="badge {{ $inspection->category === 'PL' ? 'bg-orange-50 dark:bg-orange-950/20 text-orange-600 border-orange-200 dark:border-orange-900/40' : 'bg-green-50 dark:bg-green-950/20 text-green-600 border-green-200 dark:border-green-900/40' }}">
-                                    {{ $inspection->category === 'PL' ? '🚛' : '🚗' }} {{ $inspection->category }}
-                                </span>
-                            </td>
-                            <td class="text-center text-base font-semibold text-slate-500 dark:text-slate-400">
-                                {{ $inspection->deleted_at->format('d/m/Y H:i') }}
-                            </td>
-                            <td class="text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button onclick="handleTrashAction({{ $inspection->id }}, '{{ route('inspections.restore', $inspection->id) }}', 'POST', 'Voulez-vous restaurer ce véhicule ?', 'Restauré avec succès')"
-                                            class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all shine-effect hover:scale-105 active:scale-95" title="Restaurer">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-                                    </button>
-                                    <button onclick="handleTrashAction({{ $inspection->id }}, '{{ route('inspections.forceDestroy', $inspection->id) }}', 'DELETE', 'Ce véhicule sera supprimé définitivement.', 'Supprimé définitivement')"
-                                            class="p-2.5 bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/50 rounded-xl transition-all shine-effect hover:scale-105 active:scale-95" title="Supprimer définitivement">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr id="empty-state-row">
-                            <td colspan="5" class="px-8 py-16 text-center">
-                                <div class="flex flex-col items-center gap-3">
-                                    <div class="p-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-slate-600">
-                                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </div>
-                                    <p class="text-sm font-medium text-slate-400 dark:text-slate-600">La corbeille est vide</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
+                    <tbody id="trash-table-body" data-dashboard-sync="{{ route('inspections.snapshot', ['scope' => 'trash']) }}">
+                        @include('inspections.partials.trash-rows', ['inspections' => $inspections])
                     </tbody>
                 </table>
             </div>
 
             <!-- Pagination -->
-            <div class="px-6 py-4 border-t border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex justify-center [&_.pagination]:flex [&_.pagination]:items-center [&_.pagination]:gap-1 [&_.page-item_.page-link]:px-4 [&_.page-item_.page-link]:py-2 [&_.page-item_.page-link]:rounded-xl [&_.page-item_.page-link]:text-sm [&_.page-item_.page-link]:font-bold [&_.page-item_.page-link]:border [&_.page-item_.page-link]:border-slate-200 dark:[&_.page-item_.page-link]:border-gray-700 [&_.page-item_.page-link]:bg-white dark:[&_.page-item_.page-link]:bg-gray-800 [&_.page-item_.page-link]:text-gray-600 dark:[&_.page-item_.page-link]:text-gray-300 [&_.page-item_.page-link]:transition-all [&_.page-item_.page-link]:hover:bg-slate-100 dark:[&_.page-item_.page-link]:hover:bg-gray-700 [&_.page-item.active_.page-link]:bg-red-600 [&_.page-item.active_.page-link]:border-red-600 [&_.page-item.active_.page-link]:text-white [&_.page-item.disabled_.page-link]:opacity-40">
-                {{ $inspections->links() }}
-            </div>
+            <div id="inspection-pagination">@include('inspections.partials.trash-pagination', ['inspections' => $inspections])</div>
         </div>
     </main>
 
@@ -334,11 +284,6 @@
         }
 
         // ── Counter ────────────────────────────────────────────────
-        function updateTrashCount(delta) {
-            const el = document.getElementById('trash-count');
-            if (el) el.textContent = Math.max(0, parseInt(el.textContent, 10) + delta);
-        }
-
         // ── Actions ────────────────────────────────────────────────
         async function handleTrashAction(id, url, method, textMsg, successMsg) {
             const confirmed = await Swal.fire({
@@ -358,29 +303,22 @@
                         method: method,
                         headers: {
                             'X-CSRF-TOKEN': csrfToken,
+                            'X-Socket-ID': window.Echo?.socketId() || '',
                             'Accept': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest'
                         }
                     });
 
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({}));
+                        throw new Error(error.message || 'La modification a échoué.');
+                    }
                     if (response.ok) {
-                        const row = document.getElementById('row-' + id);
-                        if (row) {
-                            gsap.to(row, {
-                                opacity: 0,
-                                x: method === 'POST' ? -30 : 30,
-                                duration: 0.3,
-                                onComplete: () => {
-                                    row.remove();
-                                    updateTrashCount(-1);
-                                    checkEmptyState();
-                                }
-                            });
-                        }
+                        await window.refreshDashboard?.();
                         Swal.fire({ icon: 'success', title: successMsg, timer: 1200, showConfirmButton: false });
                     }
                 } catch (error) {
-                    Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+                    Swal.fire('Erreur', error.message || 'Une erreur est survenue', 'error');
                 }
             }
         }
@@ -403,127 +341,37 @@
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': csrfToken,
+                            'X-Socket-ID': window.Echo?.socketId() || '',
                             'Accept': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest'
                         }
                     });
 
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({}));
+                        throw new Error(error.message || 'La modification a échoué.');
+                    }
                     if (response.ok) {
-                        document.querySelectorAll('.trash-row').forEach(row => row.remove());
-                        document.getElementById('trash-count').innerText = '0';
-                        checkEmptyState();
+                        await window.refreshDashboard?.();
                         Swal.fire({ icon: 'success', title: 'Corbeille vidée', timer: 1200, showConfirmButton: false });
                     }
                 } catch (error) {
-                    Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+                    Swal.fire('Erreur', error.message || 'Une erreur est survenue', 'error');
                 }
             }
         }
 
-        function checkEmptyState() {
-            const tbody = document.getElementById('trash-table-body');
-            if (tbody && document.querySelectorAll('.trash-row').length === 0 && !document.getElementById('empty-state-row')) {
-                tbody.innerHTML = `
-                    <tr id="empty-state-row">
-                        <td colspan="5" class="px-8 py-16 text-center">
-                            <div class="flex flex-col items-center gap-3">
-                                <div class="p-4 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-slate-600">
-                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                </div>
-                                <p class="text-sm font-medium text-slate-400 dark:text-slate-600">La corbeille est vide</p>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
-        }
-
-        // ── Reverb real-time sync ──────────────────────────────────
-        document.addEventListener('DOMContentLoaded', function () {
-            if (typeof Echo === 'undefined') return;
-
-            Echo.private('inspections-channel')
-                .listen('.inspection.changed', (data) => {
-                    const inspection = data.inspection;
-                    const actionType = data.actionType;
-                    const row = document.getElementById(`row-${inspection.id}`);
-
-                    if (actionType === 'delete' && !row) {
-                        if (inspection.deleted_at) {
-                            appendTrashRow(inspection);
-                            updateTrashCount(1);
-                        }
-                    }
-
-                    if (actionType === 'force_delete' && row) {
-                        row.remove();
-                        updateTrashCount(-1);
-                        checkEmptyState();
-                    }
-
-                    if (actionType === 'restore' && row) {
-                        row.remove();
-                        updateTrashCount(-1);
-                        checkEmptyState();
-                    }
-
-                    if (actionType === 'empty_trash') {
-                        document.querySelectorAll('.trash-row').forEach(r => r.remove());
-                        document.getElementById('trash-count').textContent = '0';
-                        checkEmptyState();
-                    }
-                });
-        });
-
-        function appendTrashRow(inspection) {
-            const tbody = document.getElementById('trash-table-body');
-            if (!tbody) return;
-
-            const emptyRow = document.getElementById('empty-state-row');
-            if (emptyRow) emptyRow.remove();
-
-            const newRow = document.createElement('tr');
-            newRow.className = 'trash-row transition-all duration-150';
-            newRow.id = `row-${inspection.id}`;
-            newRow.dataset.id = inspection.id;
-            newRow.dataset.plate    = inspection.plate_number.toLowerCase();
-            newRow.dataset.owner    = (inspection.owner_name || '').toLowerCase();
-            newRow.dataset.category = inspection.category;
-
-            const formattedPlate = inspection.plate_number.includes('|')
-                ? inspection.plate_number.split('|').map(p => p.trim()).join(' · ')
-                : inspection.plate_number;
-
-            const catClass = inspection.category === 'PL'
-                ? 'bg-orange-50 dark:bg-orange-950/20 text-orange-600 border-orange-200 dark:border-orange-900/40'
-                : 'bg-green-50 dark:bg-green-950/20 text-green-600 border-green-200 dark:border-green-900/40';
-
-            const deletedAt = inspection.deleted_at
-                ? new Date(inspection.deleted_at).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
-                : '---';
-
-            newRow.innerHTML = `
-                <td class="font-plate font-bold text-slate-700 dark:text-slate-200 tracking-wider text-lg" dir="ltr">${formattedPlate}</td>
-                <td class="font-semibold text-slate-600 dark:text-slate-300 text-base">${inspection.owner_name || '---'}</td>
-                <td class="text-center"><span class="badge ${catClass}">${inspection.category === 'PL' ? '🚛' : '🚗'} ${inspection.category}</span></td>
-                <td class="text-center text-base font-semibold text-slate-500 dark:text-slate-400">${deletedAt}</td>
-                <td class="text-center">
-                    <div class="flex items-center justify-center gap-2">
-                        <button onclick="handleTrashAction(${inspection.id}, '/inspections/${inspection.id}/restore', 'POST', 'Voulez-vous restaurer ce véhicule ?', 'Restauré avec succès')"
-                                class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all shine-effect hover:scale-105 active:scale-95" title="Restaurer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-                        </button>
-                        <button onclick="handleTrashAction(${inspection.id}, '/inspections/${inspection.id}/force', 'DELETE', 'Ce véhicule sera supprimé définitivement.', 'Supprimé définitivement')"
-                                class="p-2.5 bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/50 rounded-xl transition-all shine-effect hover:scale-105 active:scale-95" title="Supprimer définitivement">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        </button>
-                    </div>
-                </td>
-            `;
-
-            tbody.insertBefore(newRow, tbody.firstChild);
-        }
+        window.renderDashboardSnapshot = function(data) {
+            const body = document.getElementById('trash-table-body');
+            if (window.dashboardRowsHtml !== data.html) { body.innerHTML = data.html; window.dashboardRowsHtml = data.html; }
+            document.getElementById('trash-count').textContent = data.totalCount;
+            document.getElementById('inspection-pagination').innerHTML = data.paginationHtml;
+            const emptyButton = document.getElementById('empty-trash-btn');
+            if (emptyButton) emptyButton.style.display = data.totalCount ? '' : 'none';
+            filterTrash();
+        };
     </script>
 
+<x-branding-modal />
 </body>
 </html>

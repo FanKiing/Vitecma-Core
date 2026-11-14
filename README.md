@@ -63,7 +63,7 @@ A cutting-edge, high-performance digital solution for technical vehicle inspecti
 ---
 
 ### 🛠️ Stack Technique
-* **Backend:** Laravel 11 / PHP 8.2+
+* **Backend:** Laravel 13 / PHP 8.4+
 * **Real-time Server:** Laravel Reverb & Laravel Echo (WebSockets)
 * **Frontend:** Blade Templates, Tailwind CSS & Vanilla JavaScript (Fetch API)
 * **Database:** SQLite
@@ -75,12 +75,14 @@ A cutting-edge, high-performance digital solution for technical vehicle inspecti
 1. **Installer les dépendances PHP et Node :**
    ```
    composer install
-   npm install
+   npm ci
    ```
 2. **Configurer l'environnement (```.env```) :** 
    ```
    cp .env.example .env
    php artisan key:generate
+   php artisan migrate
+   npm run build
    ```
 3. **Lancer les serveurs simultanément :**
    ```
@@ -91,3 +93,16 @@ A cutting-edge, high-performance digital solution for technical vehicle inspecti
    # Asset Compilation (Vite)
    npm run dev
    ```
+
+
+### Authentication and centre branding
+
+Authentication uses Laravel Fortify (Breeze is removed). Sign in with a username and password. Existing username-only accounts remain valid; the additive email migration preserves them. New registrations receive the standard user role, never administrator privileges. An email can be added in `/profile` for password recovery. Email verification is optional and does not block the existing centre accounts.
+
+Login attempts are limited to five per minute per username/IP pair and twenty per minute per IP. Registration, recovery and password confirmation are rate limited. Fortify regenerates the session after login; CSRF, HttpOnly and SameSite cookies remain enabled. HTTPS-only session cookies default on in production. Configure a real mail transport before using email recovery in production; the local mailer logs mail.
+
+Administrators see **Nom et logo** in the navbar. The button opens a modal on the dashboard, profile, archives or trash page. It supports changing the centre name, previewing/uploading a PNG/JPEG/WebP logo (2 MB and 2000×2000 maximum), and restoring the default logo. Changes appear on public authentication pages, dashboard headers and page icons. The update endpoint checks the administrator role on the server. Logos live in private local storage and are served through `/branding/logo`; this feature does not require a storage symlink. `/settings/branding` opens the dashboard with the modal displayed.
+
+Initial accounts are opt-in: set `SEED_ADMIN_PASSWORD` and/or `SEED_SCREEN_PASSWORD` to unique passwords of at least 12 characters, then run `php artisan db:seed`. Existing accounts and passwords are preserved, and no inspection data is deleted. Demo data is disabled by default; it is restricted to the local environment. There are no default account passwords.
+
+Validation: `php artisan test`, `composer validate --no-check-publish`, `composer check-platform-reqs`, and `npm run build`. Tests use an isolated SQLite database.
